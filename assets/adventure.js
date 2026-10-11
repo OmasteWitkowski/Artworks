@@ -51,7 +51,7 @@
   ];
 
   function start(root) {
-    var cfg = JSON.parse(root.getAttribute('data-adventure')), ALL = cfg.items, steps = [];   // steps: [{chapter, option}]
+    var cfg = JSON.parse(root.getAttribute('data-adventure')), ALL = cfg.items, JOURNAL = cfg.journal || [], steps = [];   // steps: [{chapter, option}]
     function pool(n) {
       var list = ALL;
       steps.slice(0, n == null ? steps.length : n).forEach(function (s) { if (s.option) list = list.filter(function (p) { return CHAPTERS[s.chapter].test(p, s.option.v); }); });
@@ -66,6 +66,20 @@
       }
       return null;
     }
+    /* A published story that belongs on the path just chosen. Every post you publish adds passages here. */
+    function passage() {
+      var seen = {}, pick = null;
+      steps.forEach(function (s, n) {
+        if (!s.option) return;
+        var key = CHAPTERS[s.chapter].key, v = s.option.v, field = { subject: 'subjects', color: 'colors', shape: 'shapes' }[key];
+        var hit = null;
+        if (field) for (var i = 0; i < JOURNAL.length; i++) { var j = JOURNAL[i]; if (!seen[j.url] && (j[field] || []).indexOf(v) >= 0) { hit = j; break; } }
+        if (hit) seen[hit.url] = 1;
+        if (n === steps.length - 1) pick = hit;
+      });
+      if (!pick) return '';
+      return '<aside class="adv-journal"><span>From the artist\u2019s journal</span><a href="' + esc(pick.url) + '">' + esc(pick.title) + '</a>' + (pick.excerpt ? '<p>' + esc(pick.excerpt) + '</p>' : '') + '</aside>';
+    }
     function trail() {
       var parts = steps.filter(function (s) { return s.option; }).map(function (s) { return '<span><b>' + esc(CHAPTERS[s.chapter].name) + ':</b> ' + esc(s.option.v === 'statement' ? 'statement size' : s.option.v === 'any' ? 'any size' : s.option.v) + '</span>'; });
       return parts.length ? '<div class="adv-trail" aria-label="Your path so far">' + parts.join('') + '</div>' : '';
@@ -76,7 +90,7 @@
     function draw() {
       if (!ALL.length) { root.innerHTML = '<p>The adventure opens as soon as the first artworks are published.</p>'; return; }
       var last = steps.length ? steps[steps.length - 1] : null, nx = nextChapter(), html = trail();
-      if (last && last.option) html += '<p class="adv-after">' + esc(last.option.after) + '</p>';
+      if (last && last.option) html += '<p class="adv-after">' + esc(last.option.after) + '</p>' + passage();
       if (nx) {
         var ch = CHAPTERS[nx.i], left = pool().length;
         html += '<h3 class="adv-title">' + esc(ch.title) + '</h3><p class="adv-scene">' + esc(ch.scene) + '</p><div class="adv-choices">' +
@@ -94,7 +108,7 @@
           found.map(function (p) {
             return '<div class="adv-piece">' + (p.img ? '<a href="' + esc(p.story) + '"><img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></a>' : '') +
               '<div class="adv-pb"><div class="adv-pt">' + esc(p.title) + '</div><div class="adv-pd">' + esc(p.why) + '</div>' +
-              '<a class="adv-story" href="' + esc(p.story) + '">Read its story</a>' +
+              ((p.posts && p.posts.length) ? p.posts.map(function (s) { return '<a class="adv-story" href="' + esc(s.url) + '">Read: ' + esc(s.title) + '</a>'; }).join('') : '<a class="adv-story" href="' + esc(p.story) + '">See this piece</a>') +
               (p.buy ? '<a class="adv-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta) + '</a>' : '') + '</div></div>';
           }).join('') + '</div>';
         root.innerHTML = html + controls();
