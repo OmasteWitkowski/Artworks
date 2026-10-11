@@ -40,7 +40,7 @@
 
   var CHAPTERS = [
     { key: 'world', name: 'The threshold', title: 'welcome', scene: '',
-      options: function (pool) { return WORLDS.filter(function (w) { return pool.some(function (p) { return isAbstract(p.subject) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = pickImg(pool, function (p) { return isAbstract(p.subject) === w.abs; }); return o; }); },
+      options: function (pool) { return WORLDS.filter(function (w) { return pool.some(function (p) { return isAbstract(p.subject) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? '' : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return isAbstract(p.subject) === w.abs; }); return o; }); },
       test: function (p, o) { return isAbstract(p.subject) === o.abs; }, journal: function (j, o) { return (j.subjects || []).some(function (s) { return isAbstract(s) === o.abs; }); } },
     { key: 'subject', name: 'Further in', title: 'further in',
       scene: 'You are through, and the passage draws you further in. It divides again. You do not need to know anything about art to choose: only which way you want to walk.',
