@@ -112,9 +112,9 @@
     function welcome() {
       var opts = CHAPTERS[0].options(ALL), doors = cfg.doors || {}, pics = ALL.filter(function (p) { return p.img; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
       root.innerHTML = '<div class="adv-page adv-welcome"><div class="adv-chap">Chapter one</div><h3 class="adv-title">Welcome</h3>' +
-        '<p class="adv-scene">You have scrolled past a thousand pictures looking for the one that belongs on that wall, and they all started to look like each other. Here is why: the piece you are waiting for cannot be typed into a search box. You only know it when it stops you.</p>' +
+        '<p class="adv-scene">You finished the room. The sofa is in, the paint is dry, and one wall is still bare. All you wanted was for the house to finally feel like yours. So you went looking. You scrolled, you saved a few, you nearly bought the one everybody has. Somewhere past the thousandth picture they all began to look the same, and you started to wonder whether you are just not an art person.</p>' +
         (pics.length === 3 ? '<div class="adv-strip">' + pics.map(function (p) { return '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '">'; }).join('') + '</div>' : '') +
-        '<p class="adv-plain">I am Omaste Witkowski. I photograph handblown glass so closely that a few inches open into a world of colour, and I photograph the Methow Valley and North Cascades the way they feel when you stand in them. People see my glass pieces as abstracts first and find out what they are second. Watching that surprise is how I know nobody chooses art with their head. Art is felt, not seen.</p>' +
+        '<p class="adv-plain">I am Omaste Witkowski. I used to photograph rooms for architects and builders. One long winter day I turned a wide-angle lens around backwards and held it a thumb’s width from a piece of handblown glass made by my friend Garth Mudge at Glassworks in Winthrop, Washington. What came through the lens was not glass any more. It was light moving through colour, a whole world in a few inches. That was the day I understood why searching never works. Nobody finds their piece by typing it into a box. You know it when it stops you. Art is felt, not seen, and you are exactly as qualified to feel it as anyone.' + (cfg.about ? ' <a class="adv-more-story" href="' + esc(cfg.about) + '">Read how it began</a>' : '') + '</p>' +
         '<p class="adv-plain">So I did not build you a gallery to scroll. I built a short story, and you are the one walking through it. Five small questions. Nothing to know about art, no wrong answers, nothing to sign up for. Every answer opens a door, and the last door opens onto the piece, or the handful of pieces, that fits the wall you have in mind.</p>' +
         '<p class="adv-ask">' + (opts.length > 1 ? 'Two doors are in front of you. Your piece is behind one of them. Which do you open?' : 'A door stands in front of you.') + '</p>' +
         '<div class="adv-gates">' + opts.map(function (o, k) {
@@ -159,7 +159,11 @@
               '<div class="adv-pb"><div class="adv-pt">' + esc(p.title) + '</div><div class="adv-pd">' + esc(p.why) + '</div>' +
               ((p.posts && p.posts.length) ? p.posts.map(function (s) { return '<a class="adv-story" href="' + esc(s.url) + '">Read: ' + esc(s.title) + '</a>'; }).join('') : '<a class="adv-story" href="' + esc(p.story) + '">See this piece</a>') +
               (p.buy ? '<a class="adv-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta) + '</a>' : '') + '</div></div>';
-          }).join('') + '</div>' + (left.length > shownEnd ? '<button type="button" class="adv-more">Show ' + Math.min(10, left.length - shownEnd) + ' more (' + (left.length - shownEnd) + ' left)</button>' : '');
+          }).join('') + '</div>' + (left.length > shownEnd ? '<button type="button" class="adv-more">Show ' + Math.min(10, left.length - shownEnd) + ' more (' + (left.length - shownEnd) + ' left)</button>' : '') +
+          '<div class="adv-doubt"><b>One last doubt usually shows up about now.</b> What if it is too small, or wrong for the room? Two things settle it.' +
+          (cfg.gallery ? ' You can <a href="' + esc(cfg.gallery) + '">see any piece at true size over a sofa in the Gallery</a>.' : ' Mark the size on your wall with painter’s tape and live with it for a day.') +
+          ' And Fine Art America makes each print to order, with a 30-day money-back guarantee.</div>' +
+          '<p class="adv-turn">Now picture walking in tomorrow. The wall is finished. The room finally reads as yours, and when a guest asks where you found it, you have the story.</p>';
       }
       root.innerHTML = html + controls() + '</div>';
       if (nx) [].forEach.call(root.querySelectorAll('.adv-choice'), function (b) {
