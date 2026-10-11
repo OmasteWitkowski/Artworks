@@ -44,3 +44,4 @@
 .faasc-adventure .adv-journal span{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:4px}
 .faasc-adventure .adv-journal a{font-family:Georgia,"Times New Roman",serif;font-size:21px;color:#b4501e;text-decoration:none}
 .faasc-adventure .adv-journal p{margin:6px 0 0;font-size:15px;line-height:1.5;opacity:.85}
+.faasc-finder .owf-more,.faasc-adventure .adv-more{display:block;margin:22px auto 0;padding:11px 22px;border:1px solid #c9c2b4;border-radius:8px;background:#fff;color:#222;font:inherit;font-size:15px;cursor:pointer}

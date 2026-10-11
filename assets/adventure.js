@@ -87,7 +87,9 @@
     function controls() {
       return '<div class="adv-ctl">' + (steps.length ? '<button type="button" data-a="back">Go back one step</button><button type="button" data-a="restart">Start a new adventure</button>' : '') + '</div>';
     }
-    function draw() {
+    var shownEnd = 10;
+    function draw(keep) {
+      if (keep !== true) shownEnd = 10;
       if (!ALL.length) { root.innerHTML = '<p>The adventure opens as soon as the first artworks are published.</p>'; return; }
       var last = steps.length ? steps[steps.length - 1] : null, nx = nextChapter(), html = trail();
       if (last && last.option) html += '<p class="adv-after">' + esc(last.option.after) + '</p>' + passage();
@@ -105,13 +107,14 @@
         var found = pool();
         html += '<h3 class="adv-title">' + (found.length === 1 ? 'The end of the path: you found it' : 'The end of the path: ' + found.length + ' pieces were waiting for you') + '</h3>' +
           '<p class="adv-scene">' + (found.length === 1 ? 'The path narrows to a single frame, lit as if it had been expecting you.' : 'The path opens into a small room. Everything here answers the choices you made. One of them is yours.') + '</p><div class="adv-found">' +
-          found.map(function (p) {
+          found.slice(0, shownEnd).map(function (p) {
             return '<div class="adv-piece">' + (p.img ? '<a href="' + esc(p.story) + '"><img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></a>' : '') +
               '<div class="adv-pb"><div class="adv-pt">' + esc(p.title) + '</div><div class="adv-pd">' + esc(p.why) + '</div>' +
               ((p.posts && p.posts.length) ? p.posts.map(function (s) { return '<a class="adv-story" href="' + esc(s.url) + '">Read: ' + esc(s.title) + '</a>'; }).join('') : '<a class="adv-story" href="' + esc(p.story) + '">See this piece</a>') +
               (p.buy ? '<a class="adv-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta) + '</a>' : '') + '</div></div>';
-          }).join('') + '</div>';
+          }).join('') + '</div>' + (found.length > shownEnd ? '<button type="button" class="adv-more">Show ' + Math.min(10, found.length - shownEnd) + ' more (' + (found.length - shownEnd) + ' left)</button>' : '');
         root.innerHTML = html + controls();
+        var mb = root.querySelector('.adv-more'); if (mb) mb.onclick = function () { shownEnd += 10; draw(true); };
       }
       [].forEach.call(root.querySelectorAll('[data-a]'), function (b) {
         b.onclick = function () { if (b.getAttribute('data-a') === 'back') steps.pop(); else steps = []; draw(); focus(); };

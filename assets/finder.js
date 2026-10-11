@@ -35,17 +35,22 @@
       if (q) { var w = q.toLowerCase().split(/\s+/).filter(Boolean); if (!w.every(function (x) { return p.text.indexOf(x) >= 0; })) return false; }
       return true;
     }
-    function draw() {
+    var shown = 10;
+    function draw(keep) {
+      if (keep !== true) shown = 10;
       var hits = DATA.filter(match), any = q || sel.subject.length || sel.color.length || sel.shape.length || sel.scale.length;
       root.querySelector('.owf-count').innerHTML = hits.length + (hits.length === 1 ? ' piece' : ' pieces') + (any ? ' match. <button class="owf-reset">Start over</button>' : '');
       var r = root.querySelector('.owf-reset');
       if (r) r.onclick = function () { sel = { subject: [], color: [], shape: [], scale: [] }; q = ''; root.querySelector('input').value = ''; [].forEach.call(root.querySelectorAll('.owf-chip.on'), function (x) { x.classList.remove('on'); }); draw(); };
-      root.querySelector('.owf-grid').innerHTML = hits.map(function (p) {
+      var more = hits.length - shown;
+      root.querySelector('.owf-grid').innerHTML = hits.slice(0, shown).map(function (p) {
         return '<div class="owf-card">' + (p.img ? '<a href="' + esc(p.story) + '"><img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></a>' : '') +
           '<div class="owf-b"><div class="owf-t">' + esc(p.title) + '</div><div class="owf-d">' + esc(p.why) + '</div><div class="owf-l">' +
           '<a class="owf-story" href="' + esc(p.story) + '">Read the story</a>' +
           (p.buy ? '<a class="owf-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta) + '</a>' : '') + '</div></div></div>';
       }).join('') || '<p>Nothing matches all of that yet. Try removing one choice.</p>';
+      var old = root.querySelector('.owf-more'); if (old) old.remove();
+      if (more > 0) { var b = document.createElement('button'); b.type = 'button'; b.className = 'owf-more'; b.textContent = 'Show ' + Math.min(10, more) + ' more (' + more + ' left)'; b.onclick = function () { shown += 10; draw(true); }; root.appendChild(b); }
     }
     chips('subject', vals('subject')); chips('color', vals('color')); chips('shape', vals('shape')); chips('scale', SCALE);
     root.querySelector('input').oninput = function (e) { q = e.target.value; draw(); };
