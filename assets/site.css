@@ -14,6 +14,11 @@ h1{font:400 40px/1.15 Georgia,serif;margin:0 0 12px}h2{font:400 28px Georgia,ser
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
 .tile{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;text-decoration:none;color:var(--ink)}
 .tile img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}.tile span{display:block;padding:10px 12px;font-weight:600;font-size:15px;line-height:1.3}
+.post h2{margin-top:40px}.post h3{font:600 20px system-ui;margin:28px 0 8px}.post-art{margin:30px 0}.post-art img{display:block;border-radius:6px}.post-art figcaption{font:15px system-ui;margin:8px 0 0}
+.post-next{font:15px system-ui!important;border-top:1px solid var(--line);padding-top:20px;margin-top:40px}
+.posts{display:grid;gap:18px}.post-card{display:grid;grid-template-columns:200px 1fr;gap:18px;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;text-decoration:none;color:var(--ink)}
+.post-card img{width:100%;height:100%;min-height:130px;object-fit:cover}.post-card span{padding:14px 16px 14px 0;font-size:15px}.post-card b{display:block;font:400 22px Georgia,serif;margin-bottom:4px}.post-card small{display:block;color:var(--muted);margin-bottom:6px}
+@media(max-width:600px){.post-card{grid-template-columns:1fr}.post-card span{padding:14px 16px}}
 .guide-pick{margin:34px 0;padding-top:24px;border-top:1px solid var(--line)}
 footer{border-top:1px solid var(--line);padding:24px 20px;text-align:center;font-size:14px;color:var(--muted)}
 @media(max-width:600px){h1{font-size:30px}.top nav a{margin-left:0;margin-right:14px}}
