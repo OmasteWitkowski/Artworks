@@ -209,35 +209,10 @@
       [].forEach.call(root.querySelectorAll('[data-topic]'), function (b) { b.onclick = function () { var had = answers.filter(Boolean).length || path; var g = GUIDE.filter(function (x) { return x.k === b.getAttribute('data-topic'); })[0]; guide(g, had ? function () { results(); } : null); focus(); }; });
       [].forEach.call(root.querySelectorAll('.cur-form'), function (f) { f.onsubmit = function (ev) { ev.preventDefault(); typed(f.querySelector('input').value, f.className.indexOf('cur-form2') >= 0); }; });
     }
-    /* ---- a piece on a wall, at true scale ---- */
+    /* ---- a piece on a wall, at true scale: drawn rooms, or photos of real rooms (wall.js) ---- */
     function onWall(p) {
-      var sizes = [20, 30, 40, 48, 60, 72].filter(function (s) { return !p.max_in || s <= p.max_in; }); if (!sizes.length) sizes = [Math.round(p.max_in) || 20];
-      var size = sizes[Math.min(sizes.length - 1, 2)], room = 0, ratio = 1.4;
-      var ov = document.createElement('div'); ov.className = 'cur-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', p.title + ' on a wall');
-      function drawRoom() {
-        var r = ROOMS[room - 1], span = r ? r.span_in : 150, cx = r ? r.x : 50, cy = r ? r.y : 36;
-        var wIn = ratio >= 1 ? size : size * ratio, pct = wIn / span * 100;
-        ov.querySelector('.cur-room').className = 'cur-room' + (r ? ' cur-photo' : '');
-        ov.querySelector('.cur-room').style.backgroundImage = r ? 'url("' + r.img + '")' : '';
-        ov.querySelector('.cur-room').style.aspectRatio = r && r.ratio ? r.ratio : '';
-        var a = ov.querySelector('.cur-art'); a.style.width = pct + '%'; a.style.left = cx + '%'; a.style.top = cy + '%';
-        ov.querySelector('.cur-dim').textContent = size + ' inches on the long side' + (r ? '' : ' · the sofa is 7 feet wide');
-        [].forEach.call(ov.querySelectorAll('[data-s]'), function (b) { b.className = +b.getAttribute('data-s') === size ? 'on' : ''; });
-        [].forEach.call(ov.querySelectorAll('[data-r]'), function (b) { b.className = +b.getAttribute('data-r') === room ? 'on' : ''; });
-      }
-      ov.innerHTML = '<div class="cur-ovin"><button type="button" class="cur-x" aria-label="Close">×</button><h3>' + esc(p.title) + '</h3>' +
-        '<div class="cur-room"><img class="cur-art" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"><div class="cur-sofa"></div><div class="cur-rfloor"></div></div>' +
-        '<p class="cur-dim"></p><div class="cur-sizes"><span>Size:</span>' + sizes.map(function (s) { return '<button type="button" data-s="' + s + '">' + s + '″</button>'; }).join('') + '</div>' +
-        (ROOMS.length ? '<div class="cur-sizes"><span>Room:</span><button type="button" data-r="0">Gallery wall</button>' + ROOMS.map(function (r, i) { return '<button type="button" data-r="' + (i + 1) + '">' + esc(r.name || 'Room ' + (i + 1)) + '</button>'; }).join('') + '</div>' : '') +
-        '<p class="cur-links">' + (p.story ? '<a href="' + esc(p.story) + '">Its story</a>' : '') + (p.buy ? '<a class="cur-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta || 'Buy on Fine Art America') + '</a>' : '') + '</p></div>';
-      document.body.appendChild(ov);
-      var img = ov.querySelector('.cur-art'); function sized() { if (img.naturalWidth) { ratio = img.naturalWidth / img.naturalHeight; drawRoom(); } } img.onload = sized; sized(); drawRoom();
-      function close() { document.removeEventListener('keydown', key); ov.remove(); }
-      function key(ev) { if (ev.key === 'Escape') close(); }
-      document.addEventListener('keydown', key);
-      ov.onclick = function (ev) { if (ev.target === ov) close(); }; ov.querySelector('.cur-x').onclick = close; ov.querySelector('.cur-x').focus();
-      [].forEach.call(ov.querySelectorAll('[data-s]'), function (b) { b.onclick = function () { size = +b.getAttribute('data-s'); drawRoom(); }; });
-      [].forEach.call(ov.querySelectorAll('[data-r]'), function (b) { b.onclick = function () { room = +b.getAttribute('data-r'); drawRoom(); }; });
+      if (window.FAASCWall) window.FAASCWall.open({ piece: p, rooms: ROOMS, cta: cfg.cta });
+      else if (p.story) location.href = p.story;
     }
     function focus() { var t = root.querySelector('.cur-ask'); if (t) t.focus({ preventScroll: true }); if (root.getBoundingClientRect().top < 0) root.scrollIntoView({ behavior: 'smooth' }); }
     if (!ALL.length) { root.innerHTML = '<p>The gallery opens as soon as the first artworks are published.</p>'; return; }
