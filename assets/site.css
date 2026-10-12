@@ -185,4 +185,15 @@ footer .credit{margin:0}
 .mr-chips button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;font:inherit;color:var(--ink)}.mr-chips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .mr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin:14px 0}.mr-card{margin:0;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .mr-card .mr-wall{cursor:zoom-in}.mr-card figcaption{padding:10px 12px 14px;font:15px system-ui}.mr-card figcaption b{display:block;margin-bottom:6px}.mr-card figcaption span{display:flex;gap:14px;flex-wrap:wrap}.mr-buy{font-weight:600}
+.club-apply{margin:44px 0 10px;padding:30px 32px;border-radius:12px;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--accent);scroll-margin-top:calc(var(--hdr,80px) + 20px)}
+.club-apply h2{margin:0 0 6px!important}.club-apply>p{margin:0 0 20px}.club-form{display:grid;gap:16px;font:16px/1.4 system-ui,sans-serif}
+.club-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.club-form label{display:grid;gap:6px;font-weight:600;font-size:15px}.club-form small{font-weight:400;font-size:14px;color:var(--muted)}
+.club-form input,.club-form select,.club-form textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:16px system-ui,sans-serif}
+.club-form input:focus,.club-form select:focus,.club-form textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.club-form .club-check{display:flex;gap:10px;align-items:center;font-weight:400}.club-check input{width:18px;height:18px;accent-color:var(--accent)}
+.club-hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+.club-form button{justify-self:start;border:0;cursor:pointer;font-family:inherit}.club-form button:disabled{opacity:.6;cursor:default}
+.club-msg{margin:0;min-height:0;font-size:15px}.club-msg.bad{color:#e07a6a}:root[data-theme=light] .club-msg.bad{color:#a8321e}
+.club-done h3{font:400 24px Georgia,serif;margin:0 0 8px}.club-done p{margin:0}
+@media(max-width:600px){.club-apply{padding:22px 18px}.club-row{grid-template-columns:1fr}}
 .mr-more{text-align:center;margin-top:8px}.room-count{display:block;font-weight:400;color:var(--muted);font-size:13.5px}
