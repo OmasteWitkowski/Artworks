@@ -50,8 +50,21 @@
     { k: 'look', label: 'I am just looking', sub: 'Walk me through the collection', steps: [], intro: 'A walk through the collection.' }
   ];
 
-  /* ---- the written guide (no AI): print type, framing, size, hanging, sets, ordering ---- */
+  /* ---- the written guide (no AI): the art itself, then print type, framing, size, hanging, sets, ordering.
+     The answers about the art use only facts from the artist's own About page. Their words are question phrases,
+     so a search such as "glass" or "Methow" still finds pieces instead of opening an answer. ---- */
   var GUIDE = [
+    { k: 'made', title: 'How are the glass pictures made?', words: ['made', 'how do you make', 'how did you make', 'process', 'technique', 'lens', 'camera', 'exposures', 'photographed'],
+      body: ['Each one is a photograph of handblown glass, taken from so close that the object itself disappears. What you see is light passing through the glass.',
+        'The glass is blown by my friend Garth Mudge at Glassworks in Winthrop, Washington.',
+        'I turn a wide-angle lens around backwards and work about a thumb\'s width from the surface. For each finished image I take seven photographs, from light to dark, and combine them, so the whole range of light and colour sits in one picture.'] },
+    { k: 'artist', title: 'Who is the artist?', words: ['who are you', 'who is', 'about you', 'artist', 'your story', 'background', 'omaste', 'who made'],
+      body: ['I am Omaste Witkowski. Before I made art I was an architectural photographer, and that work appeared in Architectural Digest, Fine Homebuilding and Green Building.',
+        'In 2012 I founded Artworks and The Art Drop Shop Gallery, to help people find art that suits the room it will live in. My work has hung in galleries, corporate offices, hotels, rental properties and private homes.',
+        'The aim has not changed since I photographed rooms: an image should complement the space it hangs in, and make it better. <a href="my-story.html">Read my story</a>.'] },
+    { k: 'places', title: 'Where are the landscapes?', words: ['where is', 'where was', 'where are', 'where were', 'location', 'which place', 'winthrop'],
+      body: ['My landscapes are of named places in the Methow Valley and the North Cascades of Washington State, where I spend part of my time.',
+        'Type "landscape" or "Methow" in the box to see them, or open a piece to read its story.'] },
     { k: 'medium', title: 'Which print type should I choose?', words: ['medium', 'canvas', 'metal', 'acrylic', 'paper', 'wood', 'print type', 'material', 'poster', 'which print', 'glossy', 'matte', 'glare'],
       body: ['Fine Art America prints each piece to order in several materials. You choose on the product page after you press the buy button.',
         '<b>Canvas</b> has a soft, textured surface and no glass, so there is no glare. It arrives stretched and ready to hang, and it is the easiest choice for a large piece or a bright room.',
@@ -129,9 +142,13 @@
     function topicChips() { return '<div class="cur-topics"><span>Or ask about:</span>' + GUIDE.map(function (g) { return '<button type="button" data-topic="' + g.k + '">' + esc(g.title.replace(/\?$/, '')) + '</button>'; }).join('') + '</div>'; }
     function hall() {
       path = null; answers = []; stepAt = 0; shown = 6; note = '';
-      root.innerHTML = '<div class="cur-wall cur-hall"><div class="cur-plaque">The Gallery</div><h2 class="cur-ask" tabindex="-1">What are you looking for?</h2>' +
-        '<p class="cur-lead">Tell me in a few words, or choose a way in. I will pull the pieces that fit and tell you why.</p>' +
-        '<form class="cur-form"><input type="text" class="cur-in" aria-label="What are you looking for?" placeholder="For example: something blue and wide for over the sofa" maxlength="140"><button type="submit">Show me</button></form>' +
+      var me = cfg.curator;      // the artist's own photo, when the site has one
+      root.innerHTML = '<div class="cur-wall cur-hall' + (me ? ' cur-hosted' : '') + '"><div class="cur-plaque">The Gallery</div>' +
+        (me ? '<figure class="cur-me"><img src="' + esc(me.img) + '" alt="' + esc(me.name) + '" width="132" height="132"><figcaption><b>' + esc(me.name) + '</b><span>Artist and curator</span></figcaption></figure>' +
+          '<h2 class="cur-ask" tabindex="-1">Ask me anything about my art</h2>' +
+          '<p class="cur-lead">What you are looking for, how a piece was made, which print to choose or what size to order. Ask in a few words, or choose a way in below.</p>'
+          : '<h2 class="cur-ask" tabindex="-1">What are you looking for?</h2><p class="cur-lead">Tell me in a few words, or choose a way in. I will pull the pieces that fit and tell you why.</p>') +
+        '<form class="cur-form"><input type="text" class="cur-in" aria-label="' + (me ? 'Ask me anything about my art' : 'What are you looking for?') + '" placeholder="' + (me ? 'For example: how are the glass pictures made?' : 'For example: something blue and wide for over the sofa') + '" maxlength="140"><button type="submit">' + (me ? 'Ask' : 'Show me') + '</button></form>' +
         '<div class="cur-ways">' + PATHS.map(function (p, i) { return '<button type="button" class="cur-way" data-p="' + i + '"><b>' + esc(p.label) + '</b><small>' + esc(p.sub) + '</small></button>'; }).join('') + '</div>' + topicChips() + '</div>';
       bind();
     }
@@ -197,7 +214,7 @@
         });
         shown = 6;
         if (!r.filters.length && r.path) { path = PATHS.filter(function (p) { return p.k === r.path; })[0]; answers = []; stepAt = 0; return ask(); }
-        note = !r.filters.length ? 'I could not match “' + text + '” to anything specific, so here is where we were. Try a colour, a subject, or the kind of wall.' :
+        note = !r.filters.length ? 'I do not have an answer for “' + text + '” here, so here is where we were. Try a colour, a subject or the kind of wall, or ask how the pictures are made, which print to choose or what size to order.' :
           dropped.length ? 'Nothing in the collection has all of that together, so I left out “' + dropped.join('”, “') + '”. Here is the closest.' : '';
         results();
       };
