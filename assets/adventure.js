@@ -34,6 +34,8 @@
   var NUM = ['one', 'two', 'three', 'four', 'five'];
   var ABSTRACT = ['Abstract Glass Macro', 'Contemporary Abstract & Mixed Media', 'Spiritual, Mandala & Symbolic'];
   function isAbstract(s) { return ABSTRACT.indexOf(s) >= 0; }
+  // each piece says whether it is abstract (p.abs, from what it shows); older data falls back to its collection
+  function absOf(p) { return typeof p.abs === 'boolean' ? p.abs : isAbstract(p.subject); }
   function pickImg(pool, test) { var c = pool.filter(function (p) { return p.img && test(p); }); return c.length ? c[Math.floor(Math.random() * c.length)].img : ''; }
   var WORLDS = [
     { v: 'Abstract', abs: true, door: 'abstract', label: 'Abstract', sub: 'Open this one if you want colour that makes a guest stop and ask, what is that?', after: 'The door gives, and the world you know falls away. What is left is colour and light, and it is yours to read.' },
@@ -42,8 +44,8 @@
 
   var CHAPTERS = [
     { key: 'world', name: 'The threshold', title: 'welcome', scene: '',
-      options: function (pool) { return WORLDS.filter(function (w) { return pool.some(function (p) { return isAbstract(p.subject) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? '' : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return isAbstract(p.subject) === w.abs; }); return o; }); },
-      test: function (p, o) { return isAbstract(p.subject) === o.abs; }, journal: function (j, o) { return (j.subjects || []).some(function (s) { return isAbstract(s) === o.abs; }); } },
+      options: function (pool) { return WORLDS.filter(function (w) { return pool.some(function (p) { return absOf(p) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? '' : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return absOf(p) === w.abs; }); return o; }); },
+      test: function (p, o) { return absOf(p) === o.abs; }, journal: function (j, o) { return (j.subjects || []).some(function (s) { return isAbstract(s) === o.abs; }); } },
     { key: 'subject', name: 'Further in', title: 'further in',
       scene: 'You are through, and the passage draws you further in. It divides again. You do not need to know anything about art to choose: only which way you want to walk.',
       options: function (pool) { return uniq(pool, 'subject').map(function (v) { var s = SUBJECT[v] || ['Explore ' + v, '', 'You step through, curious about what you will find.']; return { v: v, label: s[0], sub: s[1], img: sample(pool, function (p) { return p.subject === v; }), after: s[2] }; }); },

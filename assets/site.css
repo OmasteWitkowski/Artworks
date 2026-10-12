@@ -202,6 +202,9 @@ footer .credit{margin:0}
 .mr-more{text-align:center;margin-top:8px}.room-count{display:block;font-weight:400;color:var(--muted);font-size:13.5px}
 
 /* ---------- Gallery Wall: the full width of the screen, the art in its own shape, fewer boxes ---------- */
+/* no word left alone on a last line: headings are balanced, running text wraps with care */
+h1,h2,h3,.lede,.adv-lib header p,.visit-head p,.lib-copy>p,.nook-hero p,.office-hero p{text-wrap:balance}
+p,li,figcaption,blockquote,.book-x,.tile span{text-wrap:pretty}
 main{max-width:1440px;padding:40px 40px 80px}
 .top{padding:12px 40px;background:color-mix(in srgb,var(--head) 82%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);box-shadow:none}
 .top nav a{font:500 14px var(--sans);letter-spacing:.01em;color:var(--muted);margin-left:22px;padding:6px 0}.top nav a:hover{color:var(--ink)}.top nav a.here{color:var(--ink)}
