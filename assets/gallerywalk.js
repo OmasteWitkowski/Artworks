@@ -18,7 +18,8 @@
     root.innerHTML = '<div class="walk-hall"><div class="walk-sign" aria-live="polite"></div>' +
       '<button type="button" class="walk-go walk-prev" aria-label="Previous piece">&#8249;</button><button type="button" class="walk-go walk-next" aria-label="Next piece">&#8250;</button>' +
       '<div class="walk-wall" tabindex="0" aria-label="The wall of this hall"></div>' +
-      '<nav class="walk-halls" aria-label="Halls">' + halls.map(function (h, i) { return '<button type="button" data-h="' + i + '">' + esc(h.name) + '</button>'; }).join('') + '</nav><div class="walk-floor"></div></div>';
+      (cfg.head ? '<header class="g-head walk-head2"><h2 class="g-rule"><span>' + esc(cfg.head.label) + '</span></h2><p class="g-cap">' + esc(cfg.head.text) + '</p></header>' : '') +
+      '<nav class="walk-halls" aria-label="' + esc(cfg.head ? cfg.head.label : 'Halls') + '">' + halls.map(function (h, i) { return '<button type="button" data-h="' + i + '">' + esc(h.name) + '</button>'; }).join('') + '</nav><div class="walk-floor"></div></div>';
     var wall = root.querySelector('.walk-wall'), sign = root.querySelector('.walk-sign');
     var mine = (cfg.mine && document.querySelector(cfg.mine)) || root.appendChild(document.createElement('div'));
     mine.classList.add('walk-mine'); mine.setAttribute('aria-live', 'polite');
@@ -26,10 +27,12 @@
     function hall(i) {
       at = (i + halls.length) % halls.length;
       var h = halls[at];
-      sign.innerHTML = '<span class="walk-plaque">Hall ' + (at + 1) + ' of ' + halls.length + '</span><b>' + esc(h.name) + '</b><span>' + esc(h.intro || '') + '</span>';
+      var label = cfg.head ? cfg.head.label : 'Hall ' + (at + 1) + ' of ' + halls.length;
+      sign.textContent = label + ': ' + h.name;      // read out when the collection changes; the title itself lies over each picture
       wall.innerHTML = h.items.map(function (it) {
         return '<figure class="walk-piece" style="--ar:' + (it.ar || 1.33) + '"><button type="button" class="walk-art" data-id="' + esc(it.id) + '" aria-label="' + esc(it.title) + ': see it in a room">' +
-          '<img src="' + esc(it.img) + '" alt="' + esc(it.title) + '" loading="lazy"></button><figcaption class="walk-label"><b>' + esc(it.title) + '</b><span>Omaste Witkowski</span></figcaption></figure>';
+          '<img src="' + esc(it.img) + '" alt="' + esc(it.title) + '" loading="lazy">' +
+          '<span class="walk-over" aria-hidden="true"><small>' + esc(label) + '</small><b>' + esc(h.name) + '</b>' + (h.intro ? '<span>' + esc(h.intro) + '</span>' : '') + '</span></button><figcaption class="walk-label"><b>' + esc(it.title) + '</b><span>Omaste Witkowski</span></figcaption></figure>';
       }).join('') + '<a class="walk-more" href="' + esc(h.url) + '"><span>Every piece in this hall</span>&#8250;</a>';
       wall.scrollLeft = 0;
       [].forEach.call(root.querySelectorAll('[data-h]'), function (b) { b.setAttribute('aria-pressed', +b.getAttribute('data-h') === at ? 'true' : 'false'); });

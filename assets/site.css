@@ -128,7 +128,7 @@ footer .credit{margin:0}
 .walk-sign{text-align:center;padding:30px 70px 0;display:flex;flex-direction:column;gap:2px}.walk-plaque{font:600 11px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#8a7d68}
 .walk-sign b{font:400 28px var(--serif)}.walk-sign span:last-child{color:var(--hall-muted);font-size:15px}
 /* a full-size slider: one whole piece at a time, under its light, with its placard */
-.walk-wall{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:56px 0 48px;outline:none}.walk-wall::-webkit-scrollbar{display:none}
+.walk-wall{display:flex;align-items:center;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:56px 0 48px;outline:none}.walk-wall::-webkit-scrollbar{display:none}
 .walk-wall:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
 .walk-piece{flex:0 0 100%;scroll-snap-align:center;min-width:0;margin:0;position:relative;display:flex;flex-direction:column;align-items:center;gap:24px}
 .walk-piece::before{content:"";position:absolute;top:-56px;left:50%;width:min(90%,980px);height:calc(100% + 40px);transform:translateX(-50%);
@@ -140,7 +140,7 @@ footer .credit{margin:0}
 .walk-label b{display:block;font-weight:600}.walk-label span{color:#7a7266}
 .walk-more{flex:0 0 100%;scroll-snap-align:center;justify-content:center;align-self:center;min-height:200px;text-decoration:none;color:var(--accent);font:600 15px var(--sans);border:1px dashed var(--hall-line);padding:16px 18px;border-radius:6px;display:flex;gap:8px;align-items:center}
 .walk-floor{height:48px;border-top:7px solid var(--floor-edge);background:var(--floor);box-shadow:inset 0 6px 9px rgba(0,0,0,.28)}
-.walk-go{position:absolute;top:calc(50% + 50px);z-index:3;width:44px;height:44px;border-radius:50%;border:0;background:rgba(38,38,42,.78);color:#fff;font-size:30px;line-height:40px;cursor:pointer}
+.walk-go{position:absolute;top:calc(50% - 110px);z-index:3;width:44px;height:44px;border-radius:50%;border:0;background:rgba(38,38,42,.78);color:#fff;font-size:30px;line-height:40px;cursor:pointer}
 .walk-go:hover,.walk-go:focus-visible{background:#26262a}.walk-prev{left:14px}.walk-next{right:14px}
 .walk-empty{color:var(--muted);font-size:15px;margin:0;padding:22px 24px;border:1px dashed var(--line);border-radius:8px;background:var(--card)}
 .walk-myroom{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 18px 16px;margin-bottom:14px}
@@ -348,6 +348,13 @@ main{max-width:1440px;padding:40px 40px 80px}
 .rs-pro .g-acts{justify-content:flex-start}.rs-fine{font:13px/1.5 var(--sans)!important;color:#9eb3a8!important;margin:20px 0 0!important}
 .rs-own-band{text-align:center;padding:56px 24px;border-top:1px solid var(--line);margin-bottom:20px}.rs-own-band h2{margin:0 0 10px}.rs-own-band p{font:18px/1.6 var(--serif);color:var(--muted);margin:0 auto 22px;max-width:620px}
 @media(max-width:900px){.rs-hero{grid-template-columns:1fr;gap:26px;margin-bottom:56px}.rs-pic{order:-1}.rs-steps{grid-template-columns:1fr}.rs-tips li{grid-template-columns:1fr;gap:4px}.rs-pro{padding:28px 22px}}
+/* the collection's title lies over each picture, on a dark wash along its lower edge */
+.walk-over{position:absolute;left:0;right:0;bottom:0;padding:48px 22px 16px;background:linear-gradient(transparent,rgba(8,7,6,.86));display:flex;flex-direction:column;gap:3px;text-align:left;pointer-events:none;line-height:1.25}
+.walk-over small{font:600 11px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:#d4af6a}.walk-over b{font:400 clamp(20px,2.2vw,30px)/1.15 var(--display);color:#fbf5ea}
+.walk-over span{font:14px/1.4 var(--sans);color:#e2d8c8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.walk-sign{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;padding:0!important}
+.walk-head2{margin:0 auto 18px;padding:0 24px}.walk-head2 .g-rule{color:var(--hall-ink)}.walk-head2 .g-rule::before,.walk-head2 .g-rule::after{background:var(--hall-line)}.walk-head2 .g-cap{color:var(--hall-muted)}
+@media(max-width:760px){.walk-over{padding:30px 12px 10px}.walk-over span{display:none}.walk-go{top:calc(50% - 60px)}.walk-art{width:min(calc(40vh * var(--ar)), calc(100% - 60px))}}
 /* the picture viewer */
 .lb{position:fixed;inset:0;z-index:2000;background:rgba(8,7,6,.94);display:grid;place-items:center;padding:56px 72px}
 .lb img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.6)}
