@@ -32,7 +32,7 @@
       wall.innerHTML = h.items.map(function (it) {
         return '<figure class="walk-piece" style="--ar:' + (it.ar || 1.33) + '"><button type="button" class="walk-art" data-id="' + esc(it.id) + '" aria-label="' + esc(it.title) + ': see it in a room">' +
           '<img src="' + esc(it.img) + '" alt="' + esc(it.title) + '" loading="lazy">' +
-          '<span class="walk-over" aria-hidden="true"><small>' + esc(label) + '</small><b>' + esc(h.name) + '</b>' + (h.intro ? '<span>' + esc(h.intro) + '</span>' : '') + '</span></button><figcaption class="walk-label"><b>' + esc(it.title) + '</b><span>Omaste Witkowski</span></figcaption></figure>';
+          '<span class="walk-over" aria-hidden="true"><small>' + esc(label) + '</small><b>' + esc(h.name) + '</b>' + (h.intro ? '<span>' + esc(h.intro) + '</span>' : '') + '</span></button></figure>';      // the piece's name is in its button's label; no placard under the picture
       }).join('') + '<a class="walk-more" href="' + esc(h.url) + '"><span>Every piece in this hall</span>&#8250;</a>';
       wall.scrollLeft = 0;
       [].forEach.call(root.querySelectorAll('[data-h]'), function (b) { b.setAttribute('aria-pressed', +b.getAttribute('data-h') === at ? 'true' : 'false'); });
