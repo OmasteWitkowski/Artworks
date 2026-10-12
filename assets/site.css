@@ -209,7 +209,7 @@ footer .credit{margin:0}
 
 /* ---------- Gallery Wall: the full width of the screen, the art in its own shape, fewer boxes ---------- */
 /* no word left alone on a last line: headings are balanced, running text wraps with care */
-h1,h2,h3,.lede,.adv-lib header p,.visit-head p,.lib-copy>p,.nook-hero p,.office-hero p{text-wrap:balance}
+h1,h2,h3,.lede,.adv-lib header p,.visit-head p,.lib-copy>p,.nook-hero p,.office-hero p,.g-eyebrow,.g-cap,.lib-eyebrow,.adv-lib-eyebrow{text-wrap:balance}
 p,li,figcaption,blockquote,.book-x,.tile span{text-wrap:pretty}
 main{max-width:1440px;padding:40px 40px 80px}
 .top{padding:12px 40px;background:color-mix(in srgb,var(--head) 82%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);box-shadow:none}
@@ -277,11 +277,12 @@ main{max-width:1440px;padding:40px 40px 80px}
 @media(max-width:900px){.visit-nav{margin:-28px -20px 28px}}
 /* the gallery: an entrance hung under the lights, rooms named once on a ruled label, the art doing the talking */
 .g-visit .visit-nav{margin-bottom:0}
-.g-hero{position:relative;margin:0 -40px 72px;min-height:min(84vh,820px);display:grid;grid-template-rows:1fr auto;overflow:hidden;
+.g-hero{position:relative;margin:0 0 72px;border-radius:10px;min-height:min(84vh,820px);display:grid;grid-template-rows:1fr auto;overflow:hidden;
  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,226,170,.07),transparent 70%),linear-gradient(#211e1b,#141210 78%,#0d0c0a)}
 .g-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(transparent,rgba(10,9,8,.92));pointer-events:none}
-.g-wall{display:flex;justify-content:center;align-items:center;gap:clamp(28px,6vw,96px);padding:72px 40px 20px;position:relative;z-index:1}
-.g-hang{--h:clamp(170px,28vh,300px);margin:0;position:relative;display:flex;flex-direction:column;align-items:center;gap:18px}
+.g-wall{--gap:clamp(28px,4vw,64px);display:flex;justify-content:center;align-items:center;gap:var(--gap);padding:72px 40px 20px;position:relative;z-index:1}
+/* every hung piece the same height, sized so all of them fit side by side within the page, frames and gaps included */
+.g-hang{--h:min(30vh,300px,calc((min(100vw,1440px) - 160px - (var(--n) - 1) * var(--gap) - var(--n) * 28px) / var(--sum)));margin:0;position:relative;display:flex;flex-direction:column;align-items:center;gap:18px}
 .g-hang::before{content:"";position:absolute;top:-72px;left:50%;width:calc(var(--h) * var(--ar) + 180px);height:calc(var(--h) + 150px);transform:translateX(-50%);
  background:radial-gradient(ellipse 50% 60% at 50% 0%,rgba(255,232,190,.38),transparent 72%);pointer-events:none}
 .g-hang a{position:relative;display:block;height:var(--h);width:calc(var(--h) * var(--ar));box-shadow:0 0 0 8px #f4efe6,0 0 0 10px #0d0b09,0 24px 40px rgba(0,0,0,.6);transition:transform .3s}
@@ -315,10 +316,12 @@ main{max-width:1440px;padding:40px 40px 80px}
 .cur-desk .cur-form{max-width:none!important;margin:0 0 12px!important}
 .cur-desk .cur-chips{display:flex;flex-wrap:wrap;gap:8px}.cur-desk .cur-chips button{background:none!important;border:1px solid var(--line)!important;color:var(--ink)!important;border-radius:999px!important;padding:6px 12px!important;font:14px var(--sans)!important;cursor:pointer;box-shadow:none!important;width:auto!important;min-height:0!important;text-align:center!important}
 .cur-desk .cur-chips button:hover,.cur-desk .cur-chips button:focus-visible{border-color:var(--accent)}.cur-desk .cur-chips button.topic{color:var(--muted)}
-@media(max-width:900px){.g-hero{margin:0 -20px 56px;min-height:0}.g-wall{padding:56px 20px 10px}.g-hang:not(:nth-child(2)){display:none}.g-hang{--h:clamp(170px,32vh,260px)}
+@media(max-width:900px){.g-hero{margin:0 0 56px;min-height:0}.g-wall{padding:56px 20px 10px}.g-hang:not(:nth-child(2)){display:none}.g-hang{--h:min(32vh,260px,calc((100vw - 120px) / var(--ar)))}
  .g-hang a{max-width:calc(100vw - 80px);height:auto;aspect-ratio:var(--ar)}.g-intro{padding:8px 20px 40px}.g-intro>p:not(.g-eyebrow):not(.g-acts){font-size:17px}
  .cur-desk{grid-template-columns:1fr;padding:20px}.cur-desk .cur-me{flex-direction:row;justify-content:flex-start}.cur-desk .cur-me img{width:56px;height:56px}.g-poster b{font-size:22px}}
 @media(prefers-reduced-motion:reduce){.g-poster img,.g-hang a{transition:none}}
+/* behind each door, a glimpse: one of its pieces hanging in the empty room */
+.faasc-adventure .adv-glimpse{position:absolute;width:46%;max-height:40%;object-fit:cover;transform:translate(-50%,-50%);box-shadow:0 0 0 3px #f4efe6,0 0 0 4px #1b1713,0 10px 18px rgba(0,0,0,.45)}
 /* the adventure's last page: each piece on the wall the reader chose */
 .faasc-adventure .adv-inroom{cursor:zoom-in;line-height:0;background:#1b1713}.faasc-adventure .adv-inroom .fw{line-height:1.45}
 .faasc-adventure .adv-inroom .fw-dim{display:none}

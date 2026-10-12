@@ -48,7 +48,7 @@
         if (book && book.doors) {      // this book's own two doors: each piece knows which one it is behind (p.door)
           return book.doors.map(function (d, i) { return { v: d.label, label: d.label, sub: d.sub, after: d.after, i: i, abs: i === 1, door: 'reality',
             img: pickImg(pool, function (p) { return p.door === i; }) }; }).filter(function (o) { return pool.filter(function (p) { return p.door === o.i; }).length >= 3; });
-        } return WORLDS.filter(function (w) { return pool.some(function (p) { return absOf(p) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? '' : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return absOf(p) === w.abs; }); return o; }); },
+        } return WORLDS.filter(function (w) { return pool.some(function (p) { return absOf(p) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? pickImg(pool, function (p) { return absOf(p); }) : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return absOf(p) === w.abs; }); return o; }); },
       test: function (p, o) { return typeof o.i === 'number' ? p.door === o.i : absOf(p) === o.abs; },
       journal: function (j, o) { return typeof o.i === 'number' ? false : (j.subjects || []).some(function (s) { return isAbstract(s) === o.abs; }); } },
     { key: 'subject', name: 'Further in', title: 'further in',
@@ -76,13 +76,21 @@
       test: function (p, o) { return !o.big || p.max_in >= 48; }, journal: function () { return false; } }
   ];
 
-  // The art waits for the last page: until then the story shows only empty walls (cfg.walls, real rooms from the
-  // room photos): the cover, behind each door, and each kind of wall. The other choices are words and colour.
-  function blank(cfg, key, opts) {
-    var w = cfg.walls; if (!w) return opts;
-    opts.forEach(function (o, k) { if (key === 'world') o.img = (w.behind || [])[k] || '';
-      else if (key === 'color') o.img = (w.moods || {})[['warm', 'cool', 'jewel', 'earth'][MOODS.indexOf(o.mood)]] || '';
-      else if (key !== 'shape') o.img = ''; });
+  // Pictures on the way: art on the cover, behind each door (hanging in an empty room) and on each choice, a different
+  // piece for every option; only "The wall" shows empty rooms (cfg.walls, from the room photos), to choose the room by.
+  function blank(cfg, ch, opts, pool) {
+    var w = cfg.walls, used = {};
+    opts.forEach(function (o, k) {
+      if (ch.key === 'world') { if (w) { o.glimpse = o.img; o.img = (w.behind || [])[k] || o.img; } return; }
+      if (ch.key === 'shape' && w && w[o.v]) return;
+      var fits = pool.filter(function (p) { return p.img && !used[p.img] && ch.test(p, o); });
+      if (o.mood) {       // a piece whose main colour is the mood's own, where there is one
+        var main = fits.filter(function (p) { return (p.color || []).length && o.mood.colors.indexOf(String(p.color[0]).toLowerCase()) >= 0; });
+        if (main.length) fits = main;
+      }
+      o.img = fits.length ? fits[Math.floor(Math.random() * Math.min(fits.length, 12))].img : o.img;
+      if (o.img) used[o.img] = 1;
+    });
     return opts;
   }
   function start(root) {
@@ -92,7 +100,7 @@
       var from = steps.length ? steps[steps.length - 1].chapter + 1 : 0, left = pool();
       for (var i = from; i < CHAPTERS.length; i++) {
         if (left.length <= 1) break;
-        var opts = blank(cfg, CHAPTERS[i].key, CHAPTERS[i].options(left, book, cfg));
+        var opts = blank(cfg, CHAPTERS[i], CHAPTERS[i].options(left, book, cfg), left);
         if (opts.length > 1) return { i: i, opts: opts };
       }
       return null;
@@ -119,8 +127,7 @@
       root.innerHTML = '<div class="adv-cover"><div class="adv-cover-in">' +
         '<div class="adv-kicker">An interactive story · about two minutes</div>' +
         '<div class="adv-cover-title" role="heading" aria-level="2">Choose Your Own<br><em>' + esc(book.em || 'Art Adventure') + '</em></div>' +
-        (cfg.walls && cfg.walls.cover ? '<div class="adv-plate"><img src="' + esc(cfg.walls.cover) + '" alt="An empty wall, waiting"></div>'
-          : art ? '<div class="adv-plate"><img src="' + esc(art.img) + '" alt="' + esc(art.title) + '"></div>' : '') +
+        (art ? '<div class="adv-plate"><img src="' + esc(art.img) + '" alt="' + esc(art.title) + '"></div>' : '') +
         '<p class="adv-cover-line">That wall has been bare for months.<br>' + esc(book.line || 'Behind one of two doors is the piece that ends the wait.') + '</p>' +
         '<button type="button" class="adv-begin">Open the book and find yours</button>' +
         '<div class="adv-cover-meta">' + ALL.length + ' pieces' + (JOURNAL.length ? ' · ' + JOURNAL.length + (JOURNAL.length === 1 ? ' story' : ' stories') : '') + ' · five small questions · nothing to sign up for</div>' +
@@ -129,15 +136,17 @@
     }
     function bg(u) { return u ? ' style="background-image:url(\'' + esc(u).replace(/'/g, '%27') + '\')"' : ''; }
     function welcome() {
-      var opts = blank(cfg, 'world', CHAPTERS[0].options(ALL, book, cfg)), doors = cfg.doors || {}, pics = ALL.filter(function (p) { return p.img; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
+      var opts = blank(cfg, CHAPTERS[0], CHAPTERS[0].options(ALL, book, cfg), ALL), doors = cfg.doors || {}, pics = ALL.filter(function (p) { return p.img; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
       root.innerHTML = '<div class="adv-page adv-welcome"><div class="adv-chap">Chapter one</div><h3 class="adv-title">Welcome</h3>' +
         '<p class="adv-scene">You finished the room. The sofa is in, the paint is dry, and one wall is still bare. All you wanted was for the house to finally feel like yours. So you went looking. You scrolled, you saved a few, you nearly bought the one everybody has. Somewhere past the thousandth picture they all began to look the same, and you started to wonder whether you are just not an art person.</p>' +
-        (pics.length === 3 && !cfg.walls ? '<div class="adv-strip">' + pics.map(function (p) { return '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '">'; }).join('') + '</div>' : '') +
+        (pics.length === 3 ? '<div class="adv-strip">' + pics.map(function (p) { return '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '">'; }).join('') + '</div>' : '') +
         '<p class="adv-plain">I am Omaste Witkowski. I used to photograph rooms for architects and builders. One long winter day I turned a wide-angle lens around backwards and held it a thumb’s width from a piece of handblown glass made by my friend Garth Mudge at Glassworks in Winthrop, Washington. What came through the lens was not glass any more. It was light moving through colour, a whole world in a few inches. That was the day I understood why searching never works. Nobody finds their piece by typing it into a box. You know it when it stops you. Art is felt, not seen, and you are exactly as qualified to feel it as anyone.' + (cfg.about ? ' <a class="adv-more-story" href="' + esc(cfg.about) + '">Read how it began</a>' : '') + '</p>' +
         '<p class="adv-plain">So I did not build you a gallery to scroll. I built a short story, and you are the one walking through it. Five small questions. Nothing to know about art, no wrong answers, nothing to sign up for. Every answer opens a door, and the last door opens onto the piece, or the handful of pieces, that fits the wall you have in mind.</p>' +
         '<p class="adv-ask">' + (opts.length > 1 ? 'Two doors are in front of you. Your piece is behind one of them. Which do you open?' : 'A door stands in front of you.') + '</p>' +
         '<div class="adv-gates">' + opts.map(function (o, k) {
-          return '<button type="button" class="adv-gate" data-k="' + k + '"><span class="adv-frame"><span class="adv-behind"' + (o.img ? ' style="background-image:url(\'' + esc(o.img).replace(/'/g, '%27') + '\')"' : '') + '></span>' +
+          var sc = o.glimpse && o.img && cfg.walls && cfg.walls.rooms && cfg.walls.rooms[o.img] && (cfg.walls.rooms[o.img].scenes || [])[0];
+          return '<button type="button" class="adv-gate" data-k="' + k + '"><span class="adv-frame"><span class="adv-behind"' + (o.img ? ' style="background-image:url(\'' + esc(o.img).replace(/'/g, '%27') + '\')"' : '') + '>' +
+            (o.glimpse && o.glimpse !== o.img ? '<img class="adv-glimpse" alt="" src="' + esc(o.glimpse) + '" style="left:' + (o.abs ? 50 : 68) + '%;top:' + Math.max(28, Math.min(46, sc ? sc.y : 38)) + '%">' : '') + '</span>' +
             (o.abs ? '<span class="adv-leaf adv-half adv-l"' + bg(doors[o.door]) + '></span><span class="adv-leaf adv-half adv-r"' + bg(doors[o.door]) + '></span>' : '<span class="adv-leaf"' + bg(doors[o.door]) + '></span>') + '</span>' +
             '<b>' + esc(o.label) + '</b><small>' + esc(o.sub) + '</small></button>';
         }).join('') + '</div>' +
