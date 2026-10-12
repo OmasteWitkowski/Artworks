@@ -1,7 +1,9 @@
 /* Choose Your Own Art Adventure.
    Opens on a book cover, then four short chapters. Each chapter is one dimension of the classification
    system (the wall's shape, the subject, the colour family, the scale), asked the way a person with a
-   blank wall would think about it. Paths are built from the published artworks, so no choice dead-ends. */
+   blank wall would think about it. Paths are built from the published artworks, so no choice dead-ends.
+   One book can tell one part of the collection: cfg.book = {em, line} titles its cover (a question with a single
+   answer is skipped, so a book of one collection goes straight to the questions that still divide it). */
 (function () {
   var SUBJECT = {
     'Pacific Northwest Landscapes': ['Go back to a place you have stood', 'River, trail and ridge in the Methow Valley and North Cascades', 'The trail climbs out of the valley. Snowmelt runs loud beside you, the air smells of pine and cold stone, and every bend opens a longer view.'],
@@ -68,7 +70,7 @@
   ];
 
   function start(root) {
-    var cfg = JSON.parse(root.getAttribute('data-adventure')), ALL = cfg.items, JOURNAL = cfg.journal || [], steps = [], begun = false, shownEnd = 10;
+    var cfg = JSON.parse(root.getAttribute('data-adventure')), book = cfg.book || {}, ALL = cfg.items, JOURNAL = cfg.journal || [], steps = [], begun = false, shownEnd = 10;
     function pool() { var list = ALL; steps.forEach(function (s) { if (s.option) list = list.filter(function (p) { return CHAPTERS[s.chapter].test(p, s.option); }); }); return list; }
     function nextChapter() {
       var from = steps.length ? steps[steps.length - 1].chapter + 1 : 0, left = pool();
@@ -100,9 +102,9 @@
       var from = withStory.length >= 3 ? withStory : any, art = from.length ? from[Math.floor(Math.random() * from.length)] : null;
       root.innerHTML = '<div class="adv-cover"><div class="adv-cover-in">' +
         '<div class="adv-kicker">An interactive story · about two minutes</div>' +
-        '<div class="adv-cover-title" role="heading" aria-level="2">Choose Your Own<br><em>Art Adventure</em></div>' +
+        '<div class="adv-cover-title" role="heading" aria-level="2">Choose Your Own<br><em>' + esc(book.em || 'Art Adventure') + '</em></div>' +
         (art ? '<div class="adv-plate"><img src="' + esc(art.img) + '" alt="' + esc(art.title) + '"></div>' : '') +
-        '<p class="adv-cover-line">That wall has been bare for months.<br>Behind one of two doors is the piece that ends the wait.</p>' +
+        '<p class="adv-cover-line">That wall has been bare for months.<br>' + esc(book.line || 'Behind one of two doors is the piece that ends the wait.') + '</p>' +
         '<button type="button" class="adv-begin">Open the book and find yours</button>' +
         '<div class="adv-cover-meta">' + ALL.length + ' pieces' + (JOURNAL.length ? ' · ' + JOURNAL.length + (JOURNAL.length === 1 ? ' story' : ' stories') : '') + ' · five small questions · nothing to sign up for</div>' +
         '<div class="adv-byline">Omaste Witkowski</div></div></div>';

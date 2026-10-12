@@ -39,7 +39,7 @@ function paginate(host, sel, o) {
   function init() {
     [].forEach.call(document.querySelectorAll('[data-paged]'), function (host) {
       var filters = (host.getAttribute('data-filters') || '').split(';').filter(Boolean).map(function (x) { var p = x.split(':'); return { attr: p[0], label: p[1] }; });
-      paginate(host, '[data-item]', { search: host.getAttribute('data-search') || 'Search', filters: filters });
+      paginate(host, '[data-item]', { search: host.getAttribute('data-search') || 'Search', filters: filters, per: +host.getAttribute('data-per') || 10 });
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
