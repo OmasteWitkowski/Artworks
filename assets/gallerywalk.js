@@ -1,6 +1,7 @@
 /* The Gallery Walk: one hall per collection, its best pieces hung on a lit wall. Choose a piece, see it in one of the
    rooms (wall.js), and keep it for that room. A visitor's picks stay in their own browser (localStorage), nowhere else.
-   <div class="faasc-walk" data-walk='{"halls":[{name,slug,intro,url,items:[{id,title,img,story,buy,max_in,ar,why}]}],"rooms":[...],"cta":"..."}'></div> */
+   <div class="faasc-walk" data-walk='{"halls":[{name,slug,intro,url,items:[{id,title,img,story,buy,max_in,ar,why}]}],"rooms":[...],"cta":"...","mine":"#selector"}'></div>
+   The page gives the walk its heading; "mine" names where "Your rooms" is shown (otherwise below the walk). */
 (function () {
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var KEY = 'walk-picks';
@@ -12,14 +13,13 @@
     var byId = {}; halls.forEach(function (h) { h.items.forEach(function (it) { byId[it.id] = it; }); });
     var roomName = function (slug) { var r = rooms.filter(function (x) { return x.slug === slug; })[0]; return r ? r.name : slug; };
 
-    root.innerHTML = '<div class="walk-head"><p class="walk-eyebrow">The Gallery</p><h1>Walk the gallery</h1>' +
-      '<p>' + halls.length + ' halls, one for each collection. Choose a piece, see it in one of your rooms at its real size, and keep the ones you love for the room they belong in.</p>' +
-      '<nav class="walk-halls" aria-label="Halls">' + halls.map(function (h, i) { return '<button type="button" data-h="' + i + '">' + esc(h.name) + '</button>'; }).join('') + '</nav></div>' +
-      '<div class="walk-hall"><div class="walk-sign" aria-live="polite"></div>' +
+    root.innerHTML = '<div class="walk-hall"><nav class="walk-halls" aria-label="Halls">' + halls.map(function (h, i) { return '<button type="button" data-h="' + i + '">' + esc(h.name) + '</button>'; }).join('') + '</nav>' +
+      '<div class="walk-sign" aria-live="polite"></div>' +
       '<button type="button" class="walk-go walk-prev" aria-label="Previous hall">&#8249;</button><button type="button" class="walk-go walk-next" aria-label="Next hall">&#8250;</button>' +
-      '<div class="walk-wall" tabindex="0" aria-label="The wall of this hall"></div><div class="walk-floor"></div></div>' +
-      '<section class="walk-mine" aria-live="polite"></section>';
-    var wall = root.querySelector('.walk-wall'), sign = root.querySelector('.walk-sign'), mine = root.querySelector('.walk-mine');
+      '<div class="walk-wall" tabindex="0" aria-label="The wall of this hall"></div><div class="walk-floor"></div></div>';
+    var wall = root.querySelector('.walk-wall'), sign = root.querySelector('.walk-sign');
+    var mine = (cfg.mine && document.querySelector(cfg.mine)) || root.appendChild(document.createElement('div'));
+    mine.classList.add('walk-mine'); mine.setAttribute('aria-live', 'polite');
 
     function hall(i) {
       at = (i + halls.length) % halls.length;
@@ -70,7 +70,7 @@
     function yours() {
       var slugs = Object.keys(picks).filter(function (s) { return (picks[s] || []).some(function (id) { return byId[id]; }); });
       if (!slugs.length) { mine.innerHTML = rooms.length ? '<p class="walk-empty">Your rooms are empty so far. Choose a piece on the wall and keep it for a room: it waits here.</p>' : ''; return; }
-      mine.innerHTML = '<header><h2>Your rooms</h2><span>The pieces you kept, room by room. They stay in this browser only.</span></header>' + slugs.map(function (s) {
+      mine.innerHTML = slugs.map(function (s) {
         var its = picks[s].filter(function (id) { return byId[id]; });
         return '<div class="walk-myroom"><h3>' + esc(roomName(s)) + ' <small>' + its.length + (its.length === 1 ? ' piece' : ' pieces') + '</small></h3><div class="walk-picks">' + its.map(function (id) {
           var it = byId[id];

@@ -31,27 +31,27 @@
     }).join('');
   }
   var SIZES = [12, 16, 20, 24, 30, 36, 40, 48, 60, 72];
-  var CSS = '.fw{font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:#2a2520;text-align:center}' +
+  var CSS = '.fw{font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fw-ink,#2a2520);text-align:center}' +
     '.fw-room{position:relative;width:100%;aspect-ratio:150/106;overflow:hidden;border-radius:3px;background:radial-gradient(ellipse 65% 75% at 50% 25%,#efeadf,#d3cdbf)}' +
     '.fw-photo{background:#ccc center/100% 100% no-repeat}' +
     '.fw-floor{position:absolute;left:0;right:0;bottom:0;height:' + (FLOOR / H * 100) + '%;background:linear-gradient(#8f6f4c,#6b4a2e)}' +
     '.fw-photo .fw-floor,.fw-photo .fw-f{display:none}' +
     '.fw-art{position:absolute;transform:translate(-50%,-50%);height:auto;max-width:none;box-shadow:0 8px 16px rgba(0,0,0,.35);outline:3px solid #1b1713;transition:width .3s,top .3s}' +
     '.fw-f{position:absolute;inset:0;pointer-events:none}.fw-f i{position:absolute;display:block}' +
-    '.fw .fw-dim{margin:10px 0 6px;color:#6a6258;font:13.5px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}.fw .fw-dim b{color:#8a3a14}' +
+    '.fw .fw-dim{margin:10px 0 6px;color:var(--fw-muted,#6a6258);font:13.5px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}.fw .fw-dim b{color:var(--fw-accent,#8a3a14)}' +
     '.fw-pick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:0 0 8px;font-size:13.5px}' +
-    '.fw-pick button{background:#fff;color:#2a2520;border:1px solid #c9c2b4;border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit}' +
-    '.fw-pick button[aria-pressed=true]{background:#2a2520;color:#fff;border-color:#2a2520}' +
+    '.fw-pick button{background:var(--fw-card,#fff);color:var(--fw-ink,#2a2520);border:1px solid var(--fw-line,#c9c2b4);border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit}' +
+    '.fw-pick button[aria-pressed=true]{background:var(--fw-ink,#2a2520);color:var(--fw-card,#fff);border-color:var(--fw-ink,#2a2520)}' +
     '.fw-compact .fw-dim{margin:6px 0 4px}.fw-compact .fw-pick,.fw-compact .fw-views{display:none}' +
     '.fw-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;margin:0 0 6px;scrollbar-width:thin}' +
     '.fw-thumb{flex:none;width:78px;height:54px;padding:0;border:2px solid transparent;border-radius:4px;overflow:hidden;background:#ddd;cursor:pointer;opacity:.85}' +
     '.fw-thumb img{width:100%;height:100%;object-fit:cover;display:block}.fw-thumb:hover{opacity:1}' +
-    '.fw-thumb[aria-pressed=true]{border-color:#2a2520;opacity:1;box-shadow:0 0 0 1px #2a2520}' +
+    '.fw-thumb[aria-pressed=true]{border-color:var(--fw-ink,#2a2520);opacity:1;box-shadow:0 0 0 1px var(--fw-ink,#2a2520)}' +
     '.fw-ov{position:fixed;inset:0;background:rgba(15,13,11,.82);z-index:1000;display:grid;place-items:center;padding:16px;overflow:auto}' +
-    '.fw-ovin{background:#fffdf8;max-width:880px;width:100%;padding:20px 22px 18px;border-radius:4px;position:relative}' +
-    '.fw-ov h3{font:400 22px Georgia,serif;margin:0 34px 12px;color:#2a2520}' +
-    '.fw-x{position:absolute;top:8px;right:10px;background:none;border:0;font-size:30px;line-height:1;cursor:pointer;color:#2a2520;padding:4px 8px}' +
-    '.fw .fw-links{display:flex;gap:14px;justify-content:center;align-items:center;margin:10px 0 0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}.fw-links a{color:#8a4a1c}' +
+    '.fw-ovin{background:var(--fw-card,#fffdf8);max-width:880px;width:100%;padding:20px 22px 18px;border-radius:4px;position:relative}' +
+    '.fw-ov h3{font:400 22px Georgia,serif;margin:0 34px 12px;color:var(--fw-ink,#2a2520)}' +
+    '.fw-x{position:absolute;top:8px;right:10px;background:none;border:0;font-size:30px;line-height:1;cursor:pointer;color:var(--fw-ink,#2a2520);padding:4px 8px}' +
+    '.fw .fw-links{display:flex;gap:14px;justify-content:center;align-items:center;margin:10px 0 0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}.fw-links a{color:var(--fw-accent,#8a4a1c)}' +
     '.fw-buy{background:#8a4a1c;color:#fff!important;text-decoration:none;padding:6px 11px;border-radius:3px;font-weight:600}' +
     '@media(prefers-reduced-motion:reduce){.fw-art{transition:none}}';
   function style() {
