@@ -259,6 +259,15 @@ main{max-width:1440px;padding:40px 40px 80px}
 .adv-also{text-align:center;margin-top:26px}
 @media(max-width:700px){.adv-lib h2{font-size:28px}.adv-case{justify-content:flex-start;margin:0 -20px;padding:26px 20px 0;min-height:250px}.vol{height:calc(var(--h) - 30px)}}
 @media(prefers-reduced-motion:reduce){.vol{transition:none}}
+/* your own stories: a classic gamebook page */
+.faasc-tale .tale-page{position:relative}.faasc-tale .tale-no{font:400 15px var(--display);color:#9a7a52;text-align:center;letter-spacing:.3em;margin:-6px 0 14px}
+.faasc-tale .tale-no::before,.faasc-tale .tale-no::after{content:"—";margin:0 10px;letter-spacing:0}
+.faasc-tale .tale-choices{display:flex;flex-direction:column;gap:12px;margin:28px 0 10px;border-top:1px solid #e6dcc8;padding-top:22px}
+.faasc-tale .tale-choice{background:none;border:0;text-align:left;font:italic 19px/1.5 var(--serif);color:#2a2320;cursor:pointer;padding:6px 0 6px 30px;position:relative}
+.faasc-tale .tale-choice::before{content:"¾7";position:absolute;left:0;color:#b4501e}.faasc-tale .tale-choice:hover,.faasc-tale .tale-choice:focus-visible{color:#8a3a14;text-decoration:underline}
+.faasc-tale .tale-end{text-align:center;font:italic 400 30px var(--display);color:#8a3a14;margin:26px 0 20px}
+.faasc-tale .tale-rule{font:16px/1.6 var(--serif);color:#e8dcc6;max-width:460px;margin:0 auto 22px}
+.vol.tale::after{border-color:rgba(226,130,90,.9)}.vol b{max-height:calc(var(--h) - 72px);overflow:hidden}
 /* the picture viewer */
 .lb{position:fixed;inset:0;z-index:2000;background:rgba(8,7,6,.94);display:grid;place-items:center;padding:56px 72px}
 .lb img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.6)}
