@@ -13,10 +13,12 @@
     var byId = {}; halls.forEach(function (h) { h.items.forEach(function (it) { byId[it.id] = it; }); });
     var roomName = function (slug) { var r = rooms.filter(function (x) { return x.slug === slug; })[0]; return r ? r.name : slug; };
 
-    root.innerHTML = '<div class="walk-hall"><nav class="walk-halls" aria-label="Halls">' + halls.map(function (h, i) { return '<button type="button" data-h="' + i + '">' + esc(h.name) + '</button>'; }).join('') + '</nav>' +
-      '<div class="walk-sign" aria-live="polite"></div>' +
-      '<button type="button" class="walk-go walk-prev" aria-label="Previous hall">&#8249;</button><button type="button" class="walk-go walk-next" aria-label="Next hall">&#8250;</button>' +
-      '<div class="walk-wall" tabindex="0" aria-label="The wall of this hall"></div><div class="walk-floor"></div></div>';
+    // each visit hangs every hall in a new order, so each hall opens on a different piece every time
+    halls.forEach(function (h) { for (var i = h.items.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = h.items[i]; h.items[i] = h.items[j]; h.items[j] = t; } });
+    root.innerHTML = '<div class="walk-hall"><div class="walk-sign" aria-live="polite"></div>' +
+      '<button type="button" class="walk-go walk-prev" aria-label="Previous piece">&#8249;</button><button type="button" class="walk-go walk-next" aria-label="Next piece">&#8250;</button>' +
+      '<div class="walk-wall" tabindex="0" aria-label="The wall of this hall"></div>' +
+      '<nav class="walk-halls" aria-label="Halls">' + halls.map(function (h, i) { return '<button type="button" data-h="' + i + '">' + esc(h.name) + '</button>'; }).join('') + '</nav><div class="walk-floor"></div></div>';
     var wall = root.querySelector('.walk-wall'), sign = root.querySelector('.walk-sign');
     var mine = (cfg.mine && document.querySelector(cfg.mine)) || root.appendChild(document.createElement('div'));
     mine.classList.add('walk-mine'); mine.setAttribute('aria-live', 'polite');
@@ -98,12 +100,21 @@
       });
     }
 
-    root.querySelector('.walk-prev').onclick = function () { hall(at - 1); };
-    root.querySelector('.walk-next').onclick = function () { hall(at + 1); };
+    // the arrows step one piece at a time; past the last piece of a hall they walk on into the next hall
+    function step(d) {
+      var w = wall.clientWidth, end = wall.scrollWidth - w - 4;
+      if (d > 0 && wall.scrollLeft >= end) { hall(at + 1); return; }
+      if (d < 0 && wall.scrollLeft <= 4) { hall(at - 1); wall.scrollLeft = wall.scrollWidth; return; }
+      wall.scrollBy({ left: d * w, behavior: 'smooth' });
+    }
+    root.querySelector('.walk-prev').onclick = function () { step(-1); };
+    root.querySelector('.walk-next').onclick = function () { step(1); };
     [].forEach.call(root.querySelectorAll('[data-h]'), function (b) { b.onclick = function () { hall(+b.getAttribute('data-h')); }; });
-    wall.addEventListener('keydown', function (ev) { if (ev.key === 'ArrowRight') wall.scrollBy({ left: 300, behavior: 'smooth' }); if (ev.key === 'ArrowLeft') wall.scrollBy({ left: -300, behavior: 'smooth' }); });
+    wall.addEventListener('keydown', function (ev) { if (ev.key === 'ArrowRight') { ev.preventDefault(); step(1); } if (ev.key === 'ArrowLeft') { ev.preventDefault(); step(-1); } });
     if (!halls.length) { root.innerHTML = '<p>The gallery opens as soon as the first artworks are published.</p>'; return; }
     hall(0); yours();
+    // a slide of the entrance opens its hall here, at the first piece
+    document.addEventListener('faasc-walk-hall', function (ev) { var i = +ev.detail; if (i >= 0 && i < halls.length) { hall(i); wall.scrollLeft = 0; var first = wall.querySelector('.walk-art'); if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 600); } });
   }
   function init() { [].forEach.call(document.querySelectorAll('.faasc-walk[data-walk]'), start); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
