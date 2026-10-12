@@ -44,15 +44,20 @@
 
   var CHAPTERS = [
     { key: 'world', name: 'The threshold', title: 'welcome', scene: '',
-      options: function (pool) { return WORLDS.filter(function (w) { return pool.some(function (p) { return absOf(p) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? '' : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return absOf(p) === w.abs; }); return o; }); },
-      test: function (p, o) { return absOf(p) === o.abs; }, journal: function (j, o) { return (j.subjects || []).some(function (s) { return isAbstract(s) === o.abs; }); } },
+      options: function (pool, book) {
+        if (book && book.doors) {      // this book's own two doors: each piece knows which one it is behind (p.door)
+          return book.doors.map(function (d, i) { return { v: d.label, label: d.label, sub: d.sub, after: d.after, i: i, abs: i === 1, door: 'reality',
+            img: pickImg(pool, function (p) { return p.door === i; }) }; }).filter(function (o) { return pool.filter(function (p) { return p.door === o.i; }).length >= 3; });
+        } return WORLDS.filter(function (w) { return pool.some(function (p) { return absOf(p) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? '' : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return absOf(p) === w.abs; }); return o; }); },
+      test: function (p, o) { return typeof o.i === 'number' ? p.door === o.i : absOf(p) === o.abs; },
+      journal: function (j, o) { return typeof o.i === 'number' ? false : (j.subjects || []).some(function (s) { return isAbstract(s) === o.abs; }); } },
     { key: 'subject', name: 'Further in', title: 'further in',
       scene: 'You are through, and the passage draws you further in. It divides again. You do not need to know anything about art to choose: only which way you want to walk.',
       options: function (pool) { return uniq(pool, 'subject').map(function (v) { var s = SUBJECT[v] || ['Explore ' + v, '', 'You step through, curious about what you will find.']; return { v: v, label: s[0], sub: s[1], img: sample(pool, function (p) { return p.subject === v; }), after: s[2] }; }); },
       test: function (p, o) { return p.subject === o.v; }, journal: function (j, o) { return (j.subjects || []).indexOf(o.v) >= 0; } },
     { key: 'shape', name: 'The wall', title: 'the wall',
       scene: 'Somewhere in your home a wall is waiting for what you find here. You know the one. The room is finished, the furniture is in, and it has been bare long enough to start bothering you. Which wall is it?',
-      options: function (pool) { return uniq(pool, 'shape').map(function (v) { var w = WALL[v] || ['A ' + v + ' space', '']; return { v: v, label: w[0], sub: w[1], img: sample(pool, function (p) { return p.shape === v; }), after: 'You hold the shape of that wall in your mind and carry it with you.' }; }); },
+      options: function (pool, book, cfg) { return uniq(pool, 'shape').map(function (v) { var w = WALL[v] || ['A ' + v + ' space', '']; return { v: v, label: w[0], sub: w[1], img: (cfg && cfg.walls && cfg.walls[v]) || sample(pool, function (p) { return p.shape === v; }), after: 'You hold the shape of that wall in your mind and carry it with you.' }; }); },
       test: function (p, o) { return p.shape === o.v; }, journal: function (j, o) { return (j.shapes || []).indexOf(o.v) >= 0; } },
     { key: 'color', name: 'The light', title: 'the light',
       scene: 'As you go further the light begins to change. Think of the room the wall lives in, and how you want it to feel when you walk in each morning.',
@@ -71,6 +76,15 @@
       test: function (p, o) { return !o.big || p.max_in >= 48; }, journal: function () { return false; } }
   ];
 
+  // The art waits for the last page: until then the story shows only empty walls (cfg.walls, real rooms from the
+  // room photos): the cover, behind each door, and each kind of wall. The other choices are words and colour.
+  function blank(cfg, key, opts) {
+    var w = cfg.walls; if (!w) return opts;
+    opts.forEach(function (o, k) { if (key === 'world') o.img = (w.behind || [])[k] || '';
+      else if (key === 'color') o.img = (w.moods || {})[['warm', 'cool', 'jewel', 'earth'][MOODS.indexOf(o.mood)]] || '';
+      else if (key !== 'shape') o.img = ''; });
+    return opts;
+  }
   function start(root) {
     var cfg = JSON.parse(root.getAttribute('data-adventure')), book = cfg.book || {}, ALL = cfg.items, JOURNAL = cfg.journal || [], steps = [], begun = false, shownEnd = 10;
     function pool() { var list = ALL; steps.forEach(function (s) { if (s.option) list = list.filter(function (p) { return CHAPTERS[s.chapter].test(p, s.option); }); }); return list; }
@@ -78,7 +92,7 @@
       var from = steps.length ? steps[steps.length - 1].chapter + 1 : 0, left = pool();
       for (var i = from; i < CHAPTERS.length; i++) {
         if (left.length <= 1) break;
-        var opts = CHAPTERS[i].options(left);
+        var opts = blank(cfg, CHAPTERS[i].key, CHAPTERS[i].options(left, book, cfg));
         if (opts.length > 1) return { i: i, opts: opts };
       }
       return null;
@@ -105,7 +119,8 @@
       root.innerHTML = '<div class="adv-cover"><div class="adv-cover-in">' +
         '<div class="adv-kicker">An interactive story · about two minutes</div>' +
         '<div class="adv-cover-title" role="heading" aria-level="2">Choose Your Own<br><em>' + esc(book.em || 'Art Adventure') + '</em></div>' +
-        (art ? '<div class="adv-plate"><img src="' + esc(art.img) + '" alt="' + esc(art.title) + '"></div>' : '') +
+        (cfg.walls && cfg.walls.cover ? '<div class="adv-plate"><img src="' + esc(cfg.walls.cover) + '" alt="An empty wall, waiting"></div>'
+          : art ? '<div class="adv-plate"><img src="' + esc(art.img) + '" alt="' + esc(art.title) + '"></div>' : '') +
         '<p class="adv-cover-line">That wall has been bare for months.<br>' + esc(book.line || 'Behind one of two doors is the piece that ends the wait.') + '</p>' +
         '<button type="button" class="adv-begin">Open the book and find yours</button>' +
         '<div class="adv-cover-meta">' + ALL.length + ' pieces' + (JOURNAL.length ? ' · ' + JOURNAL.length + (JOURNAL.length === 1 ? ' story' : ' stories') : '') + ' · five small questions · nothing to sign up for</div>' +
@@ -114,10 +129,10 @@
     }
     function bg(u) { return u ? ' style="background-image:url(\'' + esc(u).replace(/'/g, '%27') + '\')"' : ''; }
     function welcome() {
-      var opts = CHAPTERS[0].options(ALL), doors = cfg.doors || {}, pics = ALL.filter(function (p) { return p.img; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
+      var opts = blank(cfg, 'world', CHAPTERS[0].options(ALL, book, cfg)), doors = cfg.doors || {}, pics = ALL.filter(function (p) { return p.img; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
       root.innerHTML = '<div class="adv-page adv-welcome"><div class="adv-chap">Chapter one</div><h3 class="adv-title">Welcome</h3>' +
         '<p class="adv-scene">You finished the room. The sofa is in, the paint is dry, and one wall is still bare. All you wanted was for the house to finally feel like yours. So you went looking. You scrolled, you saved a few, you nearly bought the one everybody has. Somewhere past the thousandth picture they all began to look the same, and you started to wonder whether you are just not an art person.</p>' +
-        (pics.length === 3 ? '<div class="adv-strip">' + pics.map(function (p) { return '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '">'; }).join('') + '</div>' : '') +
+        (pics.length === 3 && !cfg.walls ? '<div class="adv-strip">' + pics.map(function (p) { return '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '">'; }).join('') + '</div>' : '') +
         '<p class="adv-plain">I am Omaste Witkowski. I used to photograph rooms for architects and builders. One long winter day I turned a wide-angle lens around backwards and held it a thumb’s width from a piece of handblown glass made by my friend Garth Mudge at Glassworks in Winthrop, Washington. What came through the lens was not glass any more. It was light moving through colour, a whole world in a few inches. That was the day I understood why searching never works. Nobody finds their piece by typing it into a box. You know it when it stops you. Art is felt, not seen, and you are exactly as qualified to feel it as anyone.' + (cfg.about ? ' <a class="adv-more-story" href="' + esc(cfg.about) + '">Read how it began</a>' : '') + '</p>' +
         '<p class="adv-plain">So I did not build you a gallery to scroll. I built a short story, and you are the one walking through it. Five small questions. Nothing to know about art, no wrong answers, nothing to sign up for. Every answer opens a door, and the last door opens onto the piece, or the handful of pieces, that fits the wall you have in mind.</p>' +
         '<p class="adv-ask">' + (opts.length > 1 ? 'Two doors are in front of you. Your piece is behind one of them. Which do you open?' : 'A door stands in front of you.') + '</p>' +
@@ -156,14 +171,24 @@
           '<button type="button" class="adv-choice adv-skip" data-k="skip">I have no preference. Keep walking.</button>' +
           '<p class="adv-left">' + left.length + (left.length === 1 ? ' piece is' : ' pieces are') + ' still on your path.</p>';
       } else {
+        // the wall the reader chose (or, without one, the room of the light they chose): every piece hangs there
+        var room = null, w = cfg.walls || {};
+        if (window.FAASCWall && w.rooms) {
+          var pickedWall = steps.filter(function (s) { return s.option && CHAPTERS[s.chapter].key === 'shape'; })[0];
+          var pickedMood = steps.filter(function (s) { return s.option && CHAPTERS[s.chapter].key === 'color'; })[0];
+          var im = (pickedWall && w[pickedWall.option.v]) || (pickedMood && (w.moods || {})[['warm', 'cool', 'jewel', 'earth'][MOODS.indexOf(pickedMood.option.mood)]]) || w.cover;
+          room = w.rooms[im] || null;
+        }
         html += '<div class="adv-chap">The last page</div><h3 class="adv-title">' + (left.length === 1 ? 'You found it' : left.length + ' pieces were waiting for you') + '</h3>' +
-          '<p class="adv-scene">' + (left.length === 1 ? 'The path narrows to a single frame, lit as if it had been expecting you.' : 'The path opens into a small room. Everything here answers the choices you made. You will know yours when you see it.') + '</p><div class="adv-found">' +
-          left.slice(0, shownEnd).map(function (p) {
-            return '<div class="adv-piece">' + (p.img ? '<a href="' + esc(p.story) + '"><img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></a>' : '') +
+          '<p class="adv-scene">' + (left.length === 1 ? 'The path narrows to a single frame, lit as if it had been expecting you.' : 'The path opens into a small room. Everything here answers the choices you made. You will know yours when you see it.') + (room ? ' Here ' + (left.length === 1 ? 'it hangs' : 'they hang') + ' on the wall you chose, at ' + (left.length === 1 ? 'its' : 'their') + ' real size.' : '') + '</p><div class="adv-found">' +
+          left.slice(0, shownEnd).map(function (p, k) {
+            return '<div class="adv-piece">' + (room ? '<div class="adv-inroom" data-k="' + k + '" role="button" tabindex="0" aria-label="See ' + esc(p.title) + ' larger, on the wall you chose"></div>'
+              : p.img ? '<a href="' + esc(p.story) + '"><img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></a>' : '') +
               '<div class="adv-pb"><div class="adv-pt">' + esc(p.title) + '</div><div class="adv-pd">' + esc(p.why) + '</div>' +
               ((p.posts && p.posts.length) ? p.posts.map(function (s) { return '<a class="adv-story" href="' + esc(s.url) + '">Read: ' + esc(s.title) + '</a>'; }).join('') : '<a class="adv-story" href="' + esc(p.story) + '">See this piece</a>') +
               (p.buy ? '<a class="adv-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta) + '</a>' : '') + '</div></div>';
           }).join('') + '</div>' + (left.length > shownEnd ? '<button type="button" class="adv-more">Show ' + Math.min(10, left.length - shownEnd) + ' more (' + (left.length - shownEnd) + ' left)</button>' : '') +
+          (room && w.myroom ? '<div class="adv-ownwall"><div><b>Now picture them on your own wall</b><span>Take a photo of your wall, mark where the art would go, and every piece hangs in it at its real size.</span></div><a href="' + esc(w.myroom) + '">Try it with your wall</a></div>' : '') +
           '<div class="adv-doubt"><b>One last doubt usually shows up about now.</b> What if it is too small, or wrong for the room? Two things settle it.' +
           (cfg.gallery ? ' You can <a href="' + esc(cfg.gallery) + '">see any piece at true size over a sofa in the Gallery</a>.' : ' Mark the size on your wall with painter’s tape and live with it for a day.') +
           ' And Fine Art America makes each print to order, with a 30-day money-back guarantee.</div>' +
@@ -174,6 +199,12 @@
         b.onclick = function () { steps.push({ chapter: nx.i, option: b.getAttribute('data-k') === 'skip' ? null : nx.opts[+b.getAttribute('data-k')] }); draw(); focus(); };
       });
       var mb = root.querySelector('.adv-more'); if (mb) mb.onclick = function () { shownEnd += 10; draw(true); };
+      if (!nx && room) [].forEach.call(root.querySelectorAll('.adv-inroom'), function (el) {
+        var p = left[+el.getAttribute('data-k')], piece = { title: p.title, img: p.img, buy: p.buy, max_in: p.max_in, story: p.story };
+        window.FAASCWall.render(el, { piece: piece, rooms: [room], room: room.slug, compact: true });
+        var big = function () { window.FAASCWall.open({ piece: piece, rooms: [room], room: room.slug, cta: cfg.cta }); };
+        el.onclick = big; el.onkeydown = function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); big(); } };
+      });
       wire();
     }
     function focus() { var t = root.querySelector('.adv-title, .adv-cover-title'); if (t) { t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true }); } if (root.scrollIntoView && root.getBoundingClientRect().top < 0) root.scrollIntoView({ behavior: 'smooth' }); }
