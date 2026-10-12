@@ -4,8 +4,9 @@
    Use it inline:  <div class="faasc-wall" data-wall='{"piece":{...},"rooms":[...],"room":"bedroom"}'></div>
    or as a pop-up: FAASCWall.open({piece, rooms, room, cta}).
    piece = {title, img, max_in (largest good print, long side, 0 if unknown), story, buy}
-   room  = {slug, name, kind, furniture, furniture_in, span_in, x, y, [scenes: [{img, span_in, x, y, ratio}]]}
-           a room with photos (scenes) shows them, with a button for each; without, it is drawn */
+   room  = {slug, name, kind, furniture, furniture_in, span_in, x, y, [scenes: [{img, span_in, x, y, ratio, style}]]}
+           a room with photos (scenes) shows them as thumbnails to choose from, filtered by decor style when the
+           photos have more than one; without photos, the room is drawn */
 (function () {
   if (window.FAASCWall) return;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -41,7 +42,11 @@
     '.fw-pick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:0 0 8px;font-size:13.5px}' +
     '.fw-pick button{background:#fff;color:#2a2520;border:1px solid #c9c2b4;border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit}' +
     '.fw-pick button[aria-pressed=true]{background:#2a2520;color:#fff;border-color:#2a2520}' +
-    '.fw-compact .fw-dim{margin:6px 0 4px}.fw-compact .fw-pick{display:none}' +
+    '.fw-compact .fw-dim{margin:6px 0 4px}.fw-compact .fw-pick,.fw-compact .fw-views{display:none}' +
+    '.fw-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;margin:0 0 6px;scrollbar-width:thin}' +
+    '.fw-thumb{flex:none;width:78px;height:54px;padding:0;border:2px solid transparent;border-radius:4px;overflow:hidden;background:#ddd;cursor:pointer;opacity:.85}' +
+    '.fw-thumb img{width:100%;height:100%;object-fit:cover;display:block}.fw-thumb:hover{opacity:1}' +
+    '.fw-thumb[aria-pressed=true]{border-color:#2a2520;opacity:1;box-shadow:0 0 0 1px #2a2520}' +
     '.fw-ov{position:fixed;inset:0;background:rgba(15,13,11,.82);z-index:1000;display:grid;place-items:center;padding:16px;overflow:auto}' +
     '.fw-ovin{background:#fffdf8;max-width:880px;width:100%;padding:20px 22px 18px;border-radius:4px;position:relative}' +
     '.fw-ov h3{font:400 22px Georgia,serif;margin:0 34px 12px;color:#2a2520}' +
@@ -71,21 +76,47 @@
       '<img class="fw-art" alt="' + esc(p.title) + (rooms.length ? ' on a wall' : '') + '"></div>' +
       '<p class="fw-dim" aria-live="polite"></p>' +
       (rooms.length > 1 ? '<div class="fw-pick" role="group" aria-label="Room"><span>Room:</span>' + rooms.map(function (r, i) { return '<button type="button" data-r="' + i + '">' + esc(r.name) + '</button>'; }).join('') + '</div>' : '') +
-      '<div class="fw-pick fw-views" role="group" aria-label="Photo" hidden></div>' +
+      '<div class="fw-views" hidden></div>' +
       '<div class="fw-pick" role="group" aria-label="Size"><span>Size:</span>' + sizes.map(function (s) { return '<button type="button" data-s="' + s + '">' + s + '″</button>'; }).join('') + '</div>' +
       (cfg.links ? '<p class="fw-links">' + (p.story ? '<a href="' + esc(p.story) + '">Its story</a>' : '') + (p.buy ? '<a class="fw-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta || 'Buy on Fine Art America') + '</a>' : '') + '</p>' : '') + '</div>';
     var box = host.querySelector('.fw-room'), art = host.querySelector('.fw-art'), furn = host.querySelector('.fw-f');
+    // the visitor's decor style (Boho, Farmhouse...) is remembered across rooms and pages
+    var decor = '';
+    try { decor = localStorage.getItem('fw-style') || ''; } catch (e) { }
+    function scenesOf(r) { return (r && (r.scenes || (r.img ? [r] : []))) || []; }
+    function firstOf(sc) { var i = sc.map(function (x) { return x.style || ''; }).indexOf(decor); return i < 0 ? 0 : i; }
     function room() {
-      var r = rooms[ri] || { name: 'Wall', kind: 'none', span_in: W, x: 50, y: 42 }, sc = r.scenes || (r.img ? [r] : []);
+      var r = rooms[ri] || { name: 'Wall', kind: 'none', span_in: W, x: 50, y: 42 }, sc = scenesOf(r);
       return sc.length ? Object.assign({}, r, sc[si % sc.length], { views: sc.length }) : r;
     }
+    si = firstOf(scenesOf(rooms[ri]));
     var views = host.querySelector('.fw-views');
-    function drawViews(n) {        // one button per photo of the room
-      views.hidden = n < 2;
-      if (views.getAttribute('data-n') === ri + ':' + n) return;
-      views.setAttribute('data-n', ri + ':' + n);
-      views.innerHTML = n < 2 ? '' : '<span>Photo:</span>' + Array.apply(null, Array(n)).map(function (_, i) { return '<button type="button" data-v="' + i + '">' + (i + 1) + '</button>'; }).join('');
-      [].forEach.call(views.querySelectorAll('[data-v]'), function (b) { b.onclick = function () { si = +b.getAttribute('data-v'); if (!chosen) size = sensible(); draw(); }; });
+    function drawViews() {        // the room's photos as thumbnails, and its styles when there are several
+      var sc = scenesOf(rooms[ri]), styles = [];
+      sc.forEach(function (x) { if (x.style && styles.indexOf(x.style) < 0) styles.push(x.style); });
+      styles.sort();
+      var on = styles.indexOf(decor) >= 0 ? decor : '', key = ri + ':' + sc.length + ':' + on;
+      views.hidden = sc.length < 2;
+      if (views.getAttribute('data-n') !== key) {
+        views.setAttribute('data-n', key);
+        views.innerHTML = sc.length < 2 ? '' :
+          (styles.length > 1 ? '<div class="fw-pick fw-styles" role="group" aria-label="Decor style"><span>Style:</span><button type="button" data-st="">All</button>' +
+            styles.map(function (x) { return '<button type="button" data-st="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' : '') +
+          '<div class="fw-strip" role="group" aria-label="Photos of this room">' + sc.map(function (x, i) {
+            return on && x.style !== on ? '' : '<button type="button" class="fw-thumb" data-v="' + i + '" aria-label="Photo ' + (i + 1) + (x.style ? ', ' + esc(x.style) : '') + '"><img src="' + esc(x.img) + '" alt="" loading="lazy"></button>';
+          }).join('') + '</div>';
+        [].forEach.call(views.querySelectorAll('[data-v]'), function (b) { b.onclick = function () { si = +b.getAttribute('data-v'); if (!chosen) size = sensible(); draw(); }; });
+        [].forEach.call(views.querySelectorAll('[data-st]'), function (b) {
+          b.onclick = function () {
+            decor = b.getAttribute('data-st'); try { localStorage.setItem('fw-style', decor); } catch (e) { }
+            si = firstOf(sc); if (!chosen) size = sensible(); draw();
+          };
+        });
+      }
+      [].forEach.call(views.querySelectorAll('[data-st]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-st') === on ? 'true' : 'false'); });
+      var strip = views.querySelector('.fw-strip'), cur = null;
+      [].forEach.call(views.querySelectorAll('[data-v]'), function (b) { var p = +b.getAttribute('data-v') === si % (sc.length || 1); b.setAttribute('aria-pressed', p ? 'true' : 'false'); if (p) cur = b; });
+      if (strip && cur) strip.scrollLeft = cur.offsetLeft - strip.offsetLeft - strip.clientWidth / 2 + cur.offsetWidth / 2;
     }
     function artIn() { var r = ratio || 1.5; var w = r >= 1 ? size : size * r; return [w, w / r]; }
     // the size a designer would start with: about two-thirds the width of the furniture under it
@@ -96,8 +127,7 @@
     }
     function draw() {
       var r = room(), d = artIn(), wIn = d[0], hIn = d[1], note = '';
-      drawViews(r.views || 0);
-      [].forEach.call(views.querySelectorAll('[data-v]'), function (b) { b.setAttribute('aria-pressed', +b.getAttribute('data-v') === si % (r.views || 1) ? 'true' : 'false'); });
+      drawViews();
       if (r.img) {
         var hSpan = r.span_in / (r.ratio || 1.5);
         box.className = 'fw-room fw-photo'; box.style.backgroundImage = 'url("' + r.img + '")'; box.style.aspectRatio = String(r.ratio || 1.5);
@@ -123,7 +153,7 @@
     if (cfg.compact) host.querySelector('.fw').className = 'fw fw-compact';
     art.onload = loaded; art.src = p.img || '';
     [].forEach.call(host.querySelectorAll('[data-s]'), function (b) { b.onclick = function () { size = +b.getAttribute('data-s'); chosen = true; draw(); }; });
-    [].forEach.call(host.querySelectorAll('[data-r]'), function (b) { b.onclick = function () { ri = +b.getAttribute('data-r'); si = 0; if (!chosen) size = sensible(); draw(); }; });
+    [].forEach.call(host.querySelectorAll('[data-r]'), function (b) { b.onclick = function () { ri = +b.getAttribute('data-r'); si = firstOf(scenesOf(rooms[ri])); if (!chosen) size = sensible(); draw(); }; });
     if (want && sizes.indexOf(want) >= 0) { size = want; chosen = true; } else size = sensible();
     draw(); loaded();
   }

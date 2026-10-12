@@ -86,7 +86,7 @@
       body: ['Hang it so the centre of the piece is about 57 to 60 inches from the floor, which is eye level for most people.',
         'Above furniture, leave about 6 to 10 inches between the top of the furniture and the bottom of the piece, so the two read as one group.',
         'In a stairwell or hallway, where people are moving, you can go a little higher.'] },
-    { k: 'sets', title: 'How do I hang several pieces together?', words: ['set', 'pair', 'group', 'together', 'triptych', 'several', 'gallery wall', 'multiple'],
+    { k: 'sets', title: 'How do I hang several pieces together?', words: ['together', 'triptych', 'gallery wall', 'hang several', 'hang a pair', 'hang them'],
       body: ['Choose pieces that share one thing: a colour family, a subject or a shape. The Gallery can find those for you: choose "Several pieces that belong together".',
         'Order them in the same material and the same frame, so the set reads as one.',
         'Hang them 2 to 3 inches apart and treat the whole group as a single piece when you centre it on the wall.'] },
@@ -107,7 +107,9 @@
     [['travel', 'building', 'architecture', 'door', 'desert', 'beach', 'city'], 'Travel / Specialty / Projects']
   ];
   var SHAPEWORDS = [[['panoramic', 'panorama', 'hallway', 'headboard'], 'panoramic horizontal'], [['wide', 'horizontal', 'sofa', 'couch', 'bed', 'bedroom', 'mantel', 'fireplace'], 'horizontal'], [['tall', 'vertical', 'narrow', 'stairs', 'stairwell', 'entry', 'entryway', 'portrait'], 'vertical'], [['square'], 'square']];
-  var STOP = 'a an the for of to in on my our i we me is are it that this with and or something some art piece pieces picture pictures print prints wall walls looking look want need would like find show have room please help can you do what which any'.split(' ');
+  var STOP = ('a an the for of to in on my our i we me is are it that this with and or something some art piece pieces picture pictures print prints wall walls looking look want need would like find show have room please help can you do what which any' +
+    // how many, and what kind of project: these choose the way in, they are not words to find in a title
+    ' two three four five six seven eight nine ten several few couple pair trio set sets group matching lodge lodges inn inns rental rentals airbnb hotel hotels office offices client clients project staging colour colours color colors tone tones shade shades').split(' ');
   function readRequest(text, ALL) {
     var t = ' ' + text.toLowerCase().replace(/[^a-z0-9' ]+/g, ' ') + ' ', words = t.trim().split(/\s+/), filters = [], used = {};
     function score(g) { var n = 0; g.words.forEach(function (w) { if (t.indexOf(' ' + w + ' ') >= 0 || (w.indexOf(' ') > 0 && t.indexOf(w) >= 0)) n += w.length; }); return n; }
@@ -142,14 +144,18 @@
     function topicChips() { return '<div class="cur-topics"><span>Or ask about:</span>' + GUIDE.map(function (g) { return '<button type="button" data-topic="' + g.k + '">' + esc(g.title.replace(/\?$/, '')) + '</button>'; }).join('') + '</div>'; }
     function hall() {
       path = null; answers = []; stepAt = 0; shown = 6; note = '';
-      var me = cfg.curator;      // the artist's own photo, when the site has one
-      root.innerHTML = '<div class="cur-wall cur-hall' + (me ? ' cur-hosted' : '') + '"><div class="cur-plaque">The Gallery</div>' +
-        (me ? '<figure class="cur-me"><img src="' + esc(me.img) + '" alt="' + esc(me.name) + '" width="132" height="132"><figcaption><b>' + esc(me.name) + '</b><span>Artist and curator</span></figcaption></figure>' +
-          '<h2 class="cur-ask" tabindex="-1">Ask me anything about my art</h2>' +
-          '<p class="cur-lead">What you are looking for, how a piece was made, which print to choose or what size to order. Ask in a few words, or choose a way in below.</p>'
-          : '<h2 class="cur-ask" tabindex="-1">What are you looking for?</h2><p class="cur-lead">Tell me in a few words, or choose a way in. I will pull the pieces that fit and tell you why.</p>') +
-        '<form class="cur-form"><input type="text" class="cur-in" aria-label="' + (me ? 'Ask me anything about my art' : 'What are you looking for?') + '" placeholder="' + (me ? 'For example: how are the glass pictures made?' : 'For example: something blue and wide for over the sofa') + '" maxlength="140"><button type="submit">' + (me ? 'Ask' : 'Show me') + '</button></form>' +
-        '<div class="cur-ways">' + PATHS.map(function (p, i) { return '<button type="button" class="cur-way" data-p="' + i + '"><b>' + esc(p.label) + '</b><small>' + esc(p.sub) + '</small></button>'; }).join('') + '</div>' + topicChips() + '</div>';
+      // the artist's own photo, when the site has one; a page can give the opening its own words (cfg.intro)
+      var me = cfg.curator, ix = cfg.intro || {};
+      var ask = ix.ask || (me ? 'Ask me anything about my art' : 'What are you looking for?');
+      var lead = ix.lead || (me ? 'What you are looking for, how a piece was made, which print to choose or what size to order. Ask in a few words, or choose a way in below.'
+        : 'Tell me in a few words, or choose a way in. I will pull the pieces that fit and tell you why.');
+      var ph = ix.placeholder || (me ? 'For example: how are the glass pictures made?' : 'For example: something blue and wide for over the sofa');
+      var ways = PATHS.map(function (p, i) { return i; }).sort(function (a, b) { return (PATHS[b].k === ix.first) - (PATHS[a].k === ix.first) || a - b; });
+      root.innerHTML = '<div class="cur-wall cur-hall' + (me ? ' cur-hosted' : '') + '"><div class="cur-plaque">' + esc(ix.plaque || 'The Gallery') + '</div>' +
+        (me ? '<figure class="cur-me"><img src="' + esc(me.img) + '" alt="' + esc(me.name) + '" width="132" height="132"><figcaption><b>' + esc(me.name) + '</b><span>Artist and curator</span></figcaption></figure>' : '') +
+        '<h2 class="cur-ask" tabindex="-1">' + esc(ask) + '</h2><p class="cur-lead">' + esc(lead) + '</p>' +
+        '<form class="cur-form"><input type="text" class="cur-in" aria-label="' + esc(ask) + '" placeholder="' + esc(ph) + '" maxlength="140"><button type="submit">' + (me ? 'Ask' : 'Show me') + '</button></form>' +
+        '<div class="cur-ways">' + ways.map(function (i) { var p = PATHS[i]; return '<button type="button" class="cur-way" data-p="' + i + '"><b>' + esc(p.label) + '</b><small>' + esc(p.sub) + '</small></button>'; }).join('') + '</div>' + topicChips() + '</div>';
       bind();
     }
     function ask() {
