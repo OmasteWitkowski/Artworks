@@ -194,6 +194,7 @@ footer .credit{margin:0}
 .club-hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
 .club-form button{justify-self:start;border:0;cursor:pointer;font-family:inherit}.club-form button:disabled{opacity:.6;cursor:default}
 .club-msg{margin:0;min-height:0;font-size:15px}.club-msg.bad{color:#e07a6a}:root[data-theme=light] .club-msg.bad{color:#a8321e}
+.club-fine{font:13.5px/1.5 system-ui,sans-serif!important;color:var(--muted);margin:26px 0 0}
 .club-done h3{font:400 24px Georgia,serif;margin:0 0 8px}.club-done p{margin:0}
 @media(max-width:600px){.club-apply{padding:22px 18px}.club-row{grid-template-columns:1fr}}
 .mr-more{text-align:center;margin-top:8px}.room-count{display:block;font-weight:400;color:var(--muted);font-size:13.5px}
