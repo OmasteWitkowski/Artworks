@@ -151,6 +151,13 @@
         : 'Tell me in a few words, or choose a way in. I will pull the pieces that fit and tell you why.');
       var ph = ix.placeholder || (me ? 'For example: how are the glass pictures made?' : 'For example: something blue and wide for over the sofa');
       var ways = PATHS.map(function (p, i) { return i; }).sort(function (a, b) { return (PATHS[b].k === ix.first) - (PATHS[a].k === ix.first) || a - b; });
+      if (ix.compact) {      // a slim front desk: the artist, one question, and the ways in as a row of chips
+        root.innerHTML = '<div class="cur-desk">' + (me ? '<figure class="cur-me"><img src="' + esc(me.img) + '" alt="' + esc(me.name) + '" width="92" height="92"><figcaption><b>' + esc(me.name) + '</b>Artist and curator</figcaption></figure>' : '') +
+          '<div><h2 class="cur-ask" tabindex="-1">' + esc(ask) + '</h2><form class="cur-form"><input type="text" class="cur-in" aria-label="' + esc(ask) + '" placeholder="' + esc(ph) + '" maxlength="140"><button type="submit">Ask</button></form>' +
+          '<div class="cur-chips">' + ways.map(function (i) { return '<button type="button" class="cur-way" data-p="' + i + '">' + esc(PATHS[i].label) + '</button>'; }).join('') +
+          GUIDE.slice(0, 4).map(function (g) { return '<button type="button" class="topic" data-topic="' + g.k + '">' + esc(g.title.replace(/\?$/, '')) + '</button>'; }).join('') + '</div></div></div>';
+        bind(); return;
+      }
       root.innerHTML = '<div class="cur-wall cur-hall' + (me ? ' cur-hosted' : '') + '"><div class="cur-plaque">' + esc(ix.plaque || 'The Gallery') + '</div>' +
         (me ? '<figure class="cur-me"><img src="' + esc(me.img) + '" alt="' + esc(me.name) + '" width="132" height="132"><figcaption><b>' + esc(me.name) + '</b><span>Artist and curator</span></figcaption></figure>' : '') +
         '<h2 class="cur-ask" tabindex="-1">' + esc(ask) + '</h2><p class="cur-lead">' + esc(lead) + '</p>' +

@@ -31,16 +31,19 @@
       }).join('') + '<a class="walk-more" href="' + esc(h.url) + '"><span>Every piece in this hall</span>&#8250;</a>';
       wall.scrollLeft = 0;
       [].forEach.call(root.querySelectorAll('[data-h]'), function (b) { b.setAttribute('aria-pressed', +b.getAttribute('data-h') === at ? 'true' : 'false'); });
-      [].forEach.call(wall.querySelectorAll('.walk-art'), function (b) { b.onclick = function () { open(byId[b.getAttribute('data-id')]); }; });
+      [].forEach.call(wall.querySelectorAll('.walk-art'), function (b) { b.onclick = function () { open(byId[b.getAttribute('data-id')], null, h.items); }; });
     }
 
-    // a piece taken off the wall: hang it in one of the rooms, and keep it for that room
-    function open(it, room) {
-      var back = document.activeElement, rs = rooms.length ? rooms : [{ slug: 'wall', name: 'A wall', kind: 'none' }];
+    // a piece taken off the wall: hang it in one of the rooms, and keep it for that room. The arrows walk on along
+    // the same wall (or the same room of yours), keeping the room you chose.
+    function open(it, room, list, back) {
+      back = back || document.activeElement; list = list || [it];
+      var rs = rooms.length ? rooms : [{ slug: 'wall', name: 'A wall', kind: 'none' }], k = Math.max(0, list.indexOf(it));
       var ri = Math.max(0, rs.map(function (r) { return r.slug; }).indexOf(room));
       var ov = document.createElement('div'); ov.className = 'walk-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', it.title);
-      ov.innerHTML = '<div class="walk-card"><button type="button" class="walk-x" aria-label="Close">&times;</button>' +
-        '<div class="walk-card-room"></div><div class="walk-card-text"><p class="walk-eyebrow">' + esc(halls[at] ? halls[at].name : '') + '</p><h2>' + esc(it.title) + '</h2>' +
+      ov.innerHTML = (list.length > 1 ? '<button type="button" class="walk-step walk-step-p" aria-label="Previous piece">&#8249;</button><button type="button" class="walk-step walk-step-n" aria-label="Next piece">&#8250;</button>' : '') +
+        '<div class="walk-card"><button type="button" class="walk-x" aria-label="Close">&times;</button>' +
+        '<div class="walk-card-room"></div><div class="walk-card-text"><p class="walk-eyebrow">' + esc(halls[at] ? halls[at].name : '') + (list.length > 1 ? '<span class="walk-count"> · ' + (k + 1) + ' of ' + list.length + '</span>' : '') + '</p><h2>' + esc(it.title) + '</h2>' +
         (it.why ? '<p>' + esc(it.why) + '</p>' : '') +
         (rooms.length ? '<p class="walk-ask">Hang it in:</p><div class="walk-rooms">' + rs.map(function (r, i) { return '<button type="button" data-r="' + i + '">' + esc(r.name) + '</button>'; }).join('') + '</div>' : '') +
         '<div class="walk-acts">' + (rooms.length ? '<button type="button" class="walk-keep"></button>' : '') +
@@ -59,9 +62,18 @@
         picks[s] = l; if (!l.length) delete picks[s]; store(picks); draw(); yours();
       };
       function close() { document.removeEventListener('keydown', key); ov.remove(); if (back && back.focus) back.focus(); }
-      function key(ev) { if (ev.key === 'Escape') close(); }
+      function step(d) { document.removeEventListener('keydown', key); ov.remove(); open(list[(k + d + list.length) % list.length], rs[ri].slug, list, back);
+        var b = document.querySelector('.walk-ov .walk-step-' + (d > 0 ? 'n' : 'p')); if (b) b.focus(); }
+      function key(ev) { if (ev.key === 'Escape') close();
+        else if (list.length > 1 && (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') && !/^(INPUT|TEXTAREA|SELECT)$/.test((ev.target || {}).tagName || '')) { ev.preventDefault(); step(ev.key === 'ArrowRight' ? 1 : -1); } }
       document.addEventListener('keydown', key);
       ov.onclick = function (ev) { if (ev.target === ov) close(); };
+      if (list.length > 1) {
+        ov.querySelector('.walk-step-p').onclick = function () { step(-1); }; ov.querySelector('.walk-step-n').onclick = function () { step(1); };
+        var x0 = null; ov.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+        ov.addEventListener('touchend', function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null;
+          if (Math.abs(dx) > 70 && !(e.target.closest && e.target.closest('.fw-strip, .fw-pick, .walk-rooms'))) step(dx < 0 ? 1 : -1); }, { passive: true });
+      }
       ov.querySelector('.walk-x').onclick = close; ov.querySelector('.walk-x').focus();
       draw();
     }
@@ -79,7 +91,8 @@
             '<button type="button" data-drop="' + esc(id) + '" data-room="' + esc(s) + '">Remove</button></span></div>';
         }).join('') + '</div></div>';
       }).join('');
-      [].forEach.call(mine.querySelectorAll('[data-see]'), function (b) { b.onclick = function () { open(byId[b.getAttribute('data-see')], b.getAttribute('data-room')); }; });
+      [].forEach.call(mine.querySelectorAll('[data-see]'), function (b) { b.onclick = function () { var s = b.getAttribute('data-room');
+        open(byId[b.getAttribute('data-see')], s, (picks[s] || []).filter(function (id) { return byId[id]; }).map(function (id) { return byId[id]; })); }; });
       [].forEach.call(mine.querySelectorAll('[data-drop]'), function (b) {
         b.onclick = function () { var s = b.getAttribute('data-room'), l = picks[s] || []; l.splice(l.indexOf(b.getAttribute('data-drop')), 1); if (!l.length) delete picks[s]; store(picks); yours(); };
       });
