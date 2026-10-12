@@ -41,6 +41,7 @@
     '.fw-pick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:0 0 8px;font-size:13.5px}' +
     '.fw-pick button{background:#fff;color:#2a2520;border:1px solid #c9c2b4;border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit}' +
     '.fw-pick button[aria-pressed=true]{background:#2a2520;color:#fff;border-color:#2a2520}' +
+    '.fw-compact .fw-dim{margin:6px 0 4px}.fw-compact .fw-pick{display:none}' +
     '.fw-ov{position:fixed;inset:0;background:rgba(15,13,11,.82);z-index:1000;display:grid;place-items:center;padding:16px;overflow:auto}' +
     '.fw-ovin{background:#fffdf8;max-width:880px;width:100%;padding:20px 22px 18px;border-radius:4px;position:relative}' +
     '.fw-ov h3{font:400 22px Georgia,serif;margin:0 34px 12px;color:#2a2520}' +
@@ -61,6 +62,9 @@
   function render(host, cfg) {
     style();
     var p = cfg.piece || {}, rooms = cfg.rooms || [], sizes = sizesFor(p), ratio = 0, chosen = false, si = 0;
+    // a size asked for (e.g. the size of the visitor's taped space) is offered and shown first, if the piece prints that large
+    var want = Math.round(cfg.size || 0);
+    if (want && (!p.max_in || want <= p.max_in) && sizes.indexOf(want) < 0) sizes = sizes.concat([want]).sort(function (a, b) { return a - b; });
     var ri = Math.max(0, rooms.map(function (r) { return r.slug; }).indexOf(cfg.room));
     var size = sizes[Math.min(sizes.length - 1, 2)];
     host.innerHTML = '<div class="fw"><div class="fw-room"><div class="fw-floor"></div><div class="fw-f"></div>' +
@@ -116,10 +120,12 @@
       [].forEach.call(host.querySelectorAll('[data-r]'), function (b) { b.setAttribute('aria-pressed', +b.getAttribute('data-r') === ri ? 'true' : 'false'); });
     }
     function loaded() { if (art.naturalWidth) { ratio = art.naturalWidth / art.naturalHeight; if (!chosen) size = sensible(); draw(); } }
+    if (cfg.compact) host.querySelector('.fw').className = 'fw fw-compact';
     art.onload = loaded; art.src = p.img || '';
     [].forEach.call(host.querySelectorAll('[data-s]'), function (b) { b.onclick = function () { size = +b.getAttribute('data-s'); chosen = true; draw(); }; });
     [].forEach.call(host.querySelectorAll('[data-r]'), function (b) { b.onclick = function () { ri = +b.getAttribute('data-r'); si = 0; if (!chosen) size = sensible(); draw(); }; });
-    size = sensible(); draw(); loaded();
+    if (want && sizes.indexOf(want) >= 0) { size = want; chosen = true; } else size = sensible();
+    draw(); loaded();
   }
 
   function open(cfg) {
@@ -141,8 +147,15 @@
     });
     // buttons that open the pop-up: <button data-wall-open='{"piece":..., "room":"bedroom"}'> with the rooms on the page's .faasc-rooms
     var shared = document.querySelector('[data-wall-rooms]'), rooms = shared ? JSON.parse(shared.getAttribute('data-wall-rooms')) : [];
+    // on a room page the room is shown at the top (data-wall-hero): the button hangs the piece there instead of in a pop-up
+    var hero = document.querySelector('[data-wall-hero]');
     [].forEach.call(document.querySelectorAll('[data-wall-open]'), function (b) {
-      b.onclick = function (ev) { ev.preventDefault(); var c = JSON.parse(b.getAttribute('data-wall-open')); open(Object.assign({ rooms: rooms }, c)); };
+      b.onclick = function (ev) {
+        ev.preventDefault(); var c = JSON.parse(b.getAttribute('data-wall-open'));
+        if (!hero) return open(Object.assign({ rooms: rooms }, c));
+        render(hero, Object.assign({ rooms: JSON.parse(hero.getAttribute('data-wall')).rooms }, c));
+        hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
     });
   }
   window.FAASCWall = { render: render, open: open, mount: mount };
