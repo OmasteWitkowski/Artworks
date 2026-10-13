@@ -104,6 +104,8 @@ footer .foot-sub{max-width:1060px;margin:0 auto 22px;display:flex;flex-wrap:wrap
  background:#2b1d14;color:#f5ead7;border-radius:10px;padding:22px 26px;font-size:16px}
 .foot-in b{display:block;font:400 22px var(--serif);color:#fff6e6;margin-bottom:2px}.foot-sub .sub-b{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.foot-sub .faasc-btn{margin:0}.foot-sub .sub-rss{color:#d9b77a}
 footer .credit{margin:0}
+footer .social{display:flex;justify-content:center;gap:14px;margin:0 0 16px}footer .social a{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);color:var(--muted);transition:color .15s,border-color .15s}
+footer .social a:hover,footer .social a:focus-visible{color:var(--ink);border-color:var(--accent)}
 /* the Gallery's sections, as a sub-menu under "Gallery" in the top menu, following the reader down the page */
 .visit{display:block}
 .visit-nav{position:sticky;top:var(--hdr,70px);z-index:40;display:flex;gap:2px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;
