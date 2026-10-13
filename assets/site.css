@@ -216,8 +216,8 @@ main{max-width:1440px;padding:40px 40px 80px}
 .top{padding:12px 40px;background:color-mix(in srgb,var(--head) 82%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);box-shadow:none}
 .top nav a{font:500 14px var(--sans);letter-spacing:.01em;color:var(--muted);margin-left:22px;padding:6px 0}.top nav a:hover{color:var(--ink)}.top nav a.here{color:var(--ink)}
 .lede{font:400 21px/1.55 var(--serif);max-width:760px}
-.story{max-width:720px}.story p,.post ul{font-size:19px;line-height:1.7}
-.story>.post-img,.story>.slider,.story>.post-art,.story>.hero{width:min(1120px,calc(100vw - 80px));max-width:none;margin-left:50%;transform:translateX(-50%)}
+.story{max-width:860px}.story p,.post ul{font-size:19px;line-height:1.7}
+.story>.post-img,.story>.slider,.story>.post-art,.story>.hero{width:100%;max-width:none}
 .story>.post-art img{max-height:82vh;width:auto;max-width:100%;margin:0 auto}.story>.post-art figcaption,.story>.post-art .faasc-buy{text-align:center}
 .grid{gap:28px 22px}.tile{background:none;border:0;border-radius:0;overflow:visible}.tile img{border-radius:3px;transition:transform .35s ease,box-shadow .35s ease}
 .tile:hover img,.tile:focus-visible img{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.35)}.tile span{padding:10px 2px 0;font:500 14px/1.35 var(--sans)}
@@ -244,7 +244,7 @@ main{max-width:1440px;padding:40px 40px 80px}
 .pn-story{margin:56px 0 0;padding-top:24px;border-top:1px solid var(--line)}.pn-story img{width:72px;height:54px}.pn-story b{font:400 19px/1.3 var(--display);white-space:normal;max-width:280px}
 @media(max-width:900px){main{padding:28px 20px 60px}.top{padding:10px 16px}.piece-page{grid-template-columns:1fr;gap:26px}
  .piece-art{position:static;min-height:0;padding:18px;background:var(--card)}.piece-art img{max-height:70vh}.piece-info h1{font-size:34px}h1{font-size:38px}
- .pn .pn-at{display:none}.pn b{display:none}.pn small{font-size:12px}.grid.just{gap:18px 12px}.just .tile{flex-basis:calc(var(--ar) * 100px)}.just .tile span{font-size:13px}.story>.post-img,.story>.slider,.story>.post-art,.story>.hero{width:calc(100vw - 40px)}}
+ .pn .pn-at{display:none}.pn b{display:none}.pn small{font-size:12px}.grid.just{gap:18px 12px}.just .tile{flex-basis:calc(var(--ar) * 100px)}.just .tile span{font-size:13px}}
 /* the adventure library: books faced out on a lit shelf, the open one standing forward */
 .adv-lib{max-width:1180px;margin:0 auto 40px;text-align:center}.adv-lib header{max-width:680px;margin:0 auto 24px}
 .adv-lib-eyebrow{font:600 12px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
@@ -363,3 +363,12 @@ main{max-width:1440px;padding:40px 40px 80px}
 .lb p{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#d8d0c4;font:14px var(--sans);margin:0}
 @media(max-width:700px){.lb{padding:56px 8px}.lb-p,.lb-n{top:auto;bottom:40px}}
 @media(prefers-reduced-motion:reduce){.tile img{transition:none}}
+/* one page width: every page's pictures and words share the same left and right edges */
+:root{--page:1120px}
+main{max-width:calc(var(--page) + 80px)}
+.story,.lede,.nook-hero,.office-hero,.room-tip,.room-hero,.lib-copy,.visit-welcome,.visit-head,.walk-head,.walk-card,.col-text,.home-about,.piece-more,
+.adv-lib,.adv-lib header,.g-intro,.g-head,.g-visit .g-head,.cur-desk,.rs-tips,.rs-pro>div,footer .foot-sub{max-width:var(--page)}
+.story,.nook-hero,.office-hero,.room-hero,.home-about,.piece-more,.adv-lib,.g-head,.cur-desk,.rs-tips{width:100%;margin-left:auto;margin-right:auto}
+.story p,.post ul,.story li{font-size:20px;line-height:1.7}
+.rs-own-band p,.faasc-curator .cur-lead,.faasc-curator .cur-form{max-width:none}
+@media(min-width:901px){.top{padding-left:max(40px,calc((100% - var(--page)) / 2));padding-right:max(40px,calc((100% - var(--page)) / 2))}}
