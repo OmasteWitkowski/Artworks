@@ -168,14 +168,11 @@
 .faasc-adventure .qz{background:#fffdf8;border:1px solid #e6dcc8;border-radius:16px;padding:22px 26px 28px;box-shadow:0 10px 30px rgba(60,40,20,.08);color:#2a2320;animation:qzIn .35s ease-out}
 @keyframes qzIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .faasc-adventure .qz-top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.faasc-adventure .qz-bar{flex:1;height:6px;border-radius:6px;background:#eee5d4;overflow:hidden}.faasc-adventure .qz-bar i{display:block;height:100%;background:linear-gradient(90deg,#d97a3a,#b4501e);border-radius:6px;transition:width .4s}
 .faasc-adventure .qz-back{background:none;border:0;color:#8a6a4a;font:600 14px system-ui,sans-serif;cursor:pointer;padding:4px 0}
-.faasc-adventure .qz-react{text-align:center;font:italic 600 17px Georgia,serif;color:#b4501e;margin:0 0 6px;animation:qzPop .5s ease-out}
 @keyframes qzPop{0%{opacity:0;transform:scale(.8)}60%{opacity:1;transform:scale(1.06)}100%{transform:none}}
 .faasc-adventure .qz-kicker{text-align:center;font:600 12px system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#b4501e;margin:0 0 4px}
 .faasc-adventure .qz .qz-title{text-align:center;font:400 34px/1.15 Georgia,serif;margin:4px 0 8px;outline:none}
 .faasc-adventure .qz-ask{text-align:center;font:17px/1.5 Georgia,serif;color:#5a4a36;max-width:560px;margin:0 auto 22px}
-.faasc-adventure .qz-hook{display:block;font-style:italic;color:#2a2320;margin-bottom:6px}
 .faasc-adventure .qz-opts{display:grid;gap:12px}
 .faasc-adventure .qz-opt{border:1px solid #e2d6bf;background:#fff;border-radius:14px;cursor:pointer;color:#2a2320;font-family:inherit;text-align:left;padding:0;overflow:hidden;
   transition:transform .15s,box-shadow .15s,border-color .15s}
@@ -202,7 +199,49 @@
 @media(max-width:600px){.faasc-adventure .qz{padding:16px 14px 22px;border-radius:12px}.faasc-adventure .qz .qz-title{font-size:27px}
   .faasc-adventure .qz-tiles,.faasc-adventure .qz-rooms{grid-template-columns:repeat(2,1fr)}.faasc-adventure .qz-doors{grid-template-columns:repeat(3,1fr);gap:8px}
   .faasc-adventure .qz-door{padding:8px 6px 10px}.faasc-adventure .qz-door b{font-size:15px}.faasc-adventure .qz-door small{display:none}.faasc-adventure .qz-palette{grid-template-columns:repeat(2,1fr)}}
-@media(prefers-reduced-motion:reduce){.faasc-adventure .qz,.faasc-adventure .qz-react{animation:none}.faasc-adventure .qz-opt,.faasc-adventure .qz-arch{transition:none}}
+@media(prefers-reduced-motion:reduce){.faasc-adventure .qz,.faasc-adventure .qz-guide{animation:none}.faasc-adventure .qz-opt,.faasc-adventure .qz-arch{transition:none}}
 .faasc-adventure .qz-doors{grid-template-columns:repeat(auto-fit,minmax(150px,200px));justify-content:center}
 .faasc-adventure .qz-found .adv-pd{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 @media(max-width:600px){.faasc-adventure .qz-doors{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}}
+/* the adventure: the path so far, where the reader is standing, a word from the artist, and the reveal */
+.faasc-adventure .qz-top{min-height:28px}.faasc-adventure .qz-trail{flex:1;display:flex;flex-wrap:wrap;gap:6px}
+.faasc-adventure .qz-crumb{background:#f1e7d6;border:0;border-radius:999px;padding:5px 12px;font:600 12px system-ui,sans-serif;color:#6f4a2a;cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faasc-adventure .qz-crumb:hover{background:#e8d6b8}.faasc-adventure .qz-crumb+.qz-crumb::before{content:"";}
+.faasc-adventure .qz-scene{position:relative;margin:0 -26px 18px;min-height:230px;background:#2a1b14 center/cover no-repeat;display:flex;align-items:flex-end;animation:qzScene 1.2s ease-out}
+.faasc-adventure .qz-scene::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,12,6,.05) 30%,rgba(20,12,6,.82))}
+.faasc-adventure .qz-scene p{position:relative;margin:0;padding:18px 26px 20px;font:italic 20px/1.5 Georgia,serif;color:#fbf3e4;text-shadow:0 1px 8px rgba(0,0,0,.6);max-width:680px}
+@keyframes qzScene{from{background-size:112%;filter:brightness(.6)}to{background-size:cover;filter:none}}
+.faasc-adventure .qz-hook{text-align:center;font:italic 19px/1.55 Georgia,serif;max-width:600px;margin:0 auto 14px}
+.faasc-adventure .qz-guide{display:flex;gap:10px;align-items:flex-start;max-width:520px;margin:0 auto 14px;animation:qzPop .5s ease-out}
+.faasc-adventure .qz-guide img{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 2px #e6b872}
+.faasc-adventure .qz-guide p{margin:0;background:#f6ecdc;border-radius:4px 16px 16px 16px;padding:8px 14px;font:15px/1.45 Georgia,serif;color:#3a2a1e}
+.faasc-adventure .qz-guide b{display:block;font:600 11px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b4501e;margin-bottom:2px}
+.faasc-adventure .qz-reveal{background:#14100c;border-color:#2a1f17;color:#f3ebdf}
+.faasc-adventure .qz-reveal .qz-crumb{background:#2a2019;color:#e6c79c}.faasc-adventure .qz-reveal .qz-back{color:#c9a87e}
+.faasc-adventure .qz-stage{position:relative;margin:0 -26px;overflow:hidden;background:#0b0907}
+.faasc-adventure .qz-hang{animation:qzRise 2.4s ease-out both}
+@keyframes qzRise{0%{filter:brightness(0)}45%{filter:brightness(.05)}100%{filter:brightness(1)}}
+.faasc-adventure .qz-lights{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 38%,rgba(255,236,200,.0) 0,rgba(0,0,0,.0) 40%);animation:qzLights 2.4s ease-out both}
+.faasc-adventure .qz-lights span{font:italic 22px Georgia,serif;color:#e6c79c;animation:qzWords 2.4s ease-out both}
+@keyframes qzLights{0%{background-color:rgba(0,0,0,.92)}40%{background-color:rgba(0,0,0,.92)}100%{background-color:rgba(0,0,0,0)}}
+@keyframes qzWords{0%{opacity:0}15%{opacity:1}45%{opacity:1}70%{opacity:0}100%{opacity:0}}
+.faasc-adventure .qz-solo{display:block;padding:40px 20px;text-align:center;background:radial-gradient(ellipse at 50% 40%,#3a2c20 0,#0b0907 70%)}
+.faasc-adventure .qz-solo img{max-width:100%;max-height:520px;box-shadow:0 0 0 10px #1d1611,0 0 0 12px #6e4b2f,0 30px 60px rgba(0,0,0,.7)}
+.faasc-adventure .qz-room{cursor:zoom-in}
+.faasc-adventure .qz-card{text-align:center;padding:24px 4px 0;animation:qzIn .6s 1.8s both}
+.faasc-adventure .qz-reveal .qz-kicker{color:#e6b872}.faasc-adventure .qz-reveal .qz-title{color:#fbf3e4;font-size:32px}
+.faasc-adventure .qz-why{font:16px/1.6 Georgia,serif;color:#d9ccb8;max-width:560px;margin:0 auto 18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.faasc-adventure .qz-buy{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:22px}.faasc-adventure .qz-buy .adv-buy{padding:14px 34px;font-size:17px}
+.faasc-adventure .qz-reveal .adv-story{color:#e6b872}
+.faasc-adventure .qz-you{max-width:520px;margin:0 auto 20px;padding:18px 20px;border-radius:14px;background:linear-gradient(135deg,#3a2414,#22170f);border:1px solid #5a3d24;display:flex;flex-direction:column;gap:6px;align-items:center}
+.faasc-adventure .qz-you b{font:400 24px/1.25 Georgia,serif;color:#f3cf94}.faasc-adventure .qz-you span{font:15px/1.5 Georgia,serif;color:#e0d2bd}
+.faasc-adventure .qz-share{margin-top:8px;background:#e6b872;color:#2a1b14;border:0;border-radius:999px;padding:10px 22px;font:600 15px system-ui,sans-serif;cursor:pointer}
+.faasc-adventure .qz-reveal .qz-skip{color:#e6c79c;border-color:#6e5640}
+.faasc-adventure .qz-more-t{font:400 20px Georgia,serif;color:#fbf3e4;margin:6px 0 12px}
+.faasc-adventure .qz-more{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:620px;margin:0 auto}
+.faasc-adventure .qz-reveal .qz-opt{background:#211913;border-color:#3d2e22;color:#f3ebdf}.faasc-adventure .qz-reveal .qz-opt b{font-size:14px}
+.faasc-adventure .qz-reveal .qz-note{color:#b9a88f}.faasc-adventure .qz-reveal .qz-note a{color:#e6b872}
+@media(max-width:600px){.faasc-adventure .qz-scene{margin:0 -14px 14px;min-height:190px}.faasc-adventure .qz-scene p{font-size:17px;padding:14px 16px}
+  .faasc-adventure .qz-stage{margin:0 -14px}.faasc-adventure .qz-more{grid-template-columns:repeat(3,1fr);gap:6px}.faasc-adventure .qz-reveal .qz-title{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.faasc-adventure .qz-scene,.faasc-adventure .qz-hang,.faasc-adventure .qz-lights,.faasc-adventure .qz-lights span,.faasc-adventure .qz-card{animation:none}.faasc-adventure .qz-lights{display:none}}
