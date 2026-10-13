@@ -106,7 +106,7 @@ footer .credit{margin:0}
 /* the Gallery's sections, as a sub-menu under "Gallery" in the top menu, following the reader down the page */
 .visit{display:block}
 .visit-nav{position:sticky;top:var(--hdr,70px);z-index:40;display:flex;gap:2px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;
- margin:-40px -40px 36px;padding:0 40px 0 var(--sub-x,40px);background:color-mix(in srgb,var(--head) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+ margin:-40px -40px 36px;padding:0 40px;background:color-mix(in srgb,var(--head) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .visit-nav::-webkit-scrollbar{display:none}
 .visit-nav a{flex:none;padding:11px 12px;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted);text-decoration:none;font:500 14px/1.3 var(--sans);transition:color .15s,border-color .15s}
 .visit-nav a:hover{color:var(--ink)}.visit-nav a.on{border-bottom-color:var(--accent);color:var(--ink)}
