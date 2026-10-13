@@ -3,6 +3,7 @@
    <div class="faasc-walk" data-walk='{"halls":[{name,slug,intro,url,items:[{id,title,img,story,buy,max_in,ar,why}]}],"rooms":[...],"cta":"...","mine":"#selector"}'></div>
    The page gives the walk its heading; "mine" names where "Your rooms" is shown (otherwise below the walk). */
 (function () {
+  function lead(t) { t = String(t || '').trim(); var m = t.match(/^.{20,220}?[.!?](\s|$)/); return m ? m[0].trim() : t.slice(0, 200); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var KEY = 'walk-picks';
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; } }
@@ -32,7 +33,7 @@
       wall.innerHTML = h.items.map(function (it) {
         return '<figure class="walk-piece" style="--ar:' + (it.ar || 1.33) + '"><button type="button" class="walk-art" data-id="' + esc(it.id) + '" aria-label="' + esc(it.title) + ': see it in a room">' +
           '<img src="' + esc(it.img) + '" alt="' + esc(it.title) + '" loading="lazy">' +
-          '<span class="walk-over" aria-hidden="true"><small>' + esc(label) + '</small><b>' + esc(h.name) + '</b>' + (h.intro ? '<span>' + esc(h.intro) + '</span>' : '') + '</span></button></figure>';      // the piece's name is in its button's label; no placard under the picture
+          '<span class="walk-over" aria-hidden="true"><small>' + esc(h.name) + '</small><b>' + esc(it.title) + '</b>' + (lead(it.why) ? '<span>' + esc(lead(it.why)) + '</span>' : '') + '</span></button></figure>';      // the collection, then this piece: its title and the first line of its description      // the piece's name is in its button's label; no placard under the picture
       }).join('') + '<a class="walk-more" href="' + esc(h.url) + '"><span>Every piece in this hall</span>&#8250;</a>';
       wall.scrollLeft = 0;
       [].forEach.call(root.querySelectorAll('[data-h]'), function (b) { b.setAttribute('aria-pressed', +b.getAttribute('data-h') === at ? 'true' : 'false'); });
