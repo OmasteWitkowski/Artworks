@@ -192,16 +192,20 @@
       var head = !left.length ? 'Nothing in the collection fits all of that yet' : left.length === 1 ? 'One piece fits' : left.length + ' pieces fit';
       var say = note || (picked.length ? (pro ? 'These share the palette and subject you chose, so they can hang in the same project and read as a set.' : 'Each of these answers what you told me. The line under each one says how.') : 'Here is a walk through the collection. Tell me more and I will narrow it.');
       root.innerHTML = '<div class="cur-wall cur-res"><div class="cur-plaque">' + esc(path ? path.intro : 'Your request') + '</div>' + crumbs() + '<h2 class="cur-ask" tabindex="-1">' + head + '</h2><p class="cur-lead">' + esc(say) + '</p>' +
-        (pro && cfg.club ? '<p class="cur-club">Buying for clients? <a href="' + esc(cfg.club) + '">The Discount Club gives 25% to 35% off my prints.</a></p>' : '') + '<div class="cur-hang">' + left.slice(0, shown).map(function (p) { var i = ALL.indexOf(p);
+        (pro && cfg.club ? '<p class="cur-club">Buying for clients? <a href="' + esc(cfg.club) + '">The Discount Club gives 25% to 35% off my prints.</a></p>' : '') +
+        (window.FAASCShop ? '<div class="cur-shop"></div>' : '<div class="cur-hang">' + left.slice(0, shown).map(function (p) { var i = ALL.indexOf(p);
           return '<figure class="cur-piece"><button type="button" class="cur-frame" data-see="' + i + '" aria-label="See ' + esc(p.title) + ' on a wall">' + (p.img ? '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '">' : '') + '</button>' +
             '<figcaption class="cur-card"><b>' + esc(p.title) + '</b><span class="cur-fit">' + esc(why(p)) + '</span>' + (p.why ? '<span class="cur-why">' + esc(p.why) + '</span>' : '') +
             '<span class="cur-links"><button type="button" data-see="' + i + '">See it on a wall</button>' + (p.story ? '<a href="' + esc(p.story) + '">Its story</a>' : '') + (p.buy ? '<a class="cur-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta || 'Buy on Fine Art America') + '</a>' : '') + '</span></figcaption></figure>';
-        }).join('') + '</div>' + (left.length > shown ? '<button type="button" class="cur-more">Show ' + Math.min(6, left.length - shown) + ' more (' + (left.length - shown) + ' left)</button>' : '') +
+        }).join('') + '</div>' + (left.length > shown ? '<button type="button" class="cur-more">Show ' + Math.min(6, left.length - shown) + ' more (' + (left.length - shown) + ' left)</button>' : '')) +
         '<div class="cur-floor"></div></div>' +
         '<div class="cur-else"><h3>Would you like to see anything else?</h3><div class="cur-else-b">' +
         picked.map(function (a) { return '<button type="button" data-drop="' + answers.indexOf(a) + '">Without “' + esc(a.label) + '”</button>'; }).join('') +
         '<button type="button" data-new>Ask for something different</button>' + (path && path.k !== 'look' ? '' : '') + '</div>' +
         '<form class="cur-form cur-form2"><input type="text" class="cur-in" aria-label="Ask for something else" placeholder="Or tell me what to change: more blue, a flower, taller…" maxlength="140"><button type="submit">Show me</button></form>' + topicChips() + '</div>';
+      // the curator's picks, refined like FAA's shop: product, medium, collection, place, colour, room, and a search within them
+      var sh = root.querySelector('.cur-shop');
+      if (sh && left.length) window.FAASCShop.mount(sh, left, { note: why, onWall: onWall, cta: cfg.cta, per: 12, search: 'Search within these: a place, a colour, a word…' });
       var mb = root.querySelector('.cur-more'); if (mb) mb.onclick = function () { shown += 6; var y = window.pageYOffset; results(); window.scrollTo(0, y); };
       [].forEach.call(root.querySelectorAll('[data-drop]'), function (b) { b.onclick = function () { answers[+b.getAttribute('data-drop')] = null; shown = 6; note = ''; results(); focus(); }; });
       root.querySelector('[data-new]').onclick = function () { hall(); focus(); };
