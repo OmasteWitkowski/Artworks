@@ -416,6 +416,14 @@ main{max-width:calc(var(--page) + 80px)}
 .buy-ways{margin-top:18px}.buy-ways>b{display:block;font:600 12px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .buy-ways span{display:flex;flex-wrap:wrap;gap:6px}.buy-ways span a{font:14px var(--sans);padding:6px 11px;border:1px solid var(--line);border-radius:6px;color:var(--ink);text-decoration:none}.buy-ways span a:hover{border-color:var(--accent)}
 .buy-ways small{color:var(--muted)}.buy-ways p{font:14px var(--sans);margin:10px 0 0}
+/* a piece's page: the picture sized to its own shape, the words wrapping round it and running on underneath */
+.piece-page{display:flow-root}
+.piece-page .piece-art{float:left;position:static;width:clamp(36%,calc(var(--ar) * 33%),60%);min-height:0;margin:6px 48px 28px 0;padding:16px;display:block;border-radius:4px}
+.piece-page .piece-art button{display:block;width:100%}.piece-page .piece-art img{display:block;width:100%;height:auto;max-height:none}
+.piece-page .piece-wide{float:none;width:auto;margin:0 0 34px}
+.piece-page .piece-info{padding-top:0}.piece-page .piece-info p:not(.facts):not(.piece-by){max-width:none}
+.piece-page .piece-info .faasc-buy,.piece-page .told{clear:none}
+@media(max-width:900px){.piece-page .piece-art{float:none;width:auto;margin:0 0 24px}}
 /* the shop: FAA-style filters down the side, style chips and search across the top */
 .shop{color:var(--ink);text-align:left}
 .shop-top{display:grid;gap:12px;margin:0 0 18px}
