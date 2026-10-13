@@ -1,222 +1,206 @@
-/* Choose Your Own Art Adventure.
-   Opens on a book cover, then four short chapters. Each chapter is one dimension of the classification
-   system (the wall's shape, the subject, the colour family, the scale), asked the way a person with a
-   blank wall would think about it. Paths are built from the published artworks, so no choice dead-ends.
-   One book can tell one part of the collection: cfg.book = {em, line} titles its cover (a question with a single
-   answer is skipped, so a book of one collection goes straight to the questions that still divide it). */
+/* Choose Your Own Art Adventure: a quick quiz that adapts as you answer, told as a very short story.
+     1 What are you into?  a subject, or all of it (a subject's own book page starts at 2)
+     2 Pick a door         the subject's story in two lines, then Abstract, Reality or Black & White, or open them all;
+                           each door shows a piece of that subject that looks like a way in
+     3 Go deeper           the subject's subsections (for all of it, its collections): words only
+     4 Where's it going?   the rooms the pieces still on the path are approved for, as room photos
+     5 Which one stops you? a few pieces of different colours, each with its palette; the one tapped comes first
+                           in the results, then the pieces most like it, hung in the chosen room at true size
+   A step with fewer than two answers left is skipped, so every path ends in art.
+   cfg = {items, cta, book: {subject, em, line}, words: {text, doors, subs},
+          quiz: {bw, hook_all, subjects: [{key, label, hook, img, href}], doors: {subject: {abstract, reality, bw}},
+                 rooms: [{name, img, wall}], subs: {name: line}, myroom}}
+   item = {title, img, story, buy, why, posts, subject, sections, sub, rooms, abs, bw, color, max_in}
+   Without quiz data (the WordPress plugin) the subjects come from the items and the deeper and room steps are skipped. */
 (function () {
-  var SUBJECT = {
-    'Pacific Northwest Landscapes': ['Go back to a place you have stood', 'River, trail and ridge in the Methow Valley and North Cascades', 'The trail climbs out of the valley. Snowmelt runs loud beside you, the air smells of pine and cold stone, and every bend opens a longer view.'],
-    'Abstract Glass Macro': ['Look closer, until glass becomes another world', 'A few inches of handblown glass, opened into colour', 'You bring your eye right up to a piece of handblown glass. The object disappears. What is left is light bending through colour, a landscape with no horizon.'],
-    'Contemporary Abstract & Mixed Media': ['Walk into colour that has no subject', 'Layered abstracts, painted by hand', 'Nothing in this room is a picture of anything. Shape, layer and colour do all the talking, and each piece sets the mood of the wall it hangs on.'],
-    'Botanical & Flowers': ['Open the garden gate', 'Flowers and leaves, closer than you usually look', 'The gate swings in on petals and leaves seen closer than you usually stop to look. Every bloom is holding still for you.'],
-    'Butterflies, Birds & Wildlife': ['Stay very still and wait for wings', 'Butterflies, birds and wild company', 'You stop moving. After a moment something alive arrives: a flicker of wings, a bright eye, a creature that has decided you are safe.'],
-    'Spiritual, Mandala & Symbolic': ['Step inside the circle', 'Mandalas, symbols and patterns that turn', 'The pattern closes around you, turning on its own centre. Symbols repeat like breath. It is a place made for looking inward.'],
-    'Travel / Specialty / Projects': ['Take the road to somewhere else', 'Other light: sand, old buildings, far places', 'You leave the valley behind for other light: warm sand, old buildings, places with their own weather.']
-  };
-  var WALL = {
-    'horizontal': ['The wide wall over the sofa or the bed', 'It wants something broad that holds the room together.'],
-    'panoramic horizontal': ['A long run of wall: a hallway, above a headboard', 'It wants a panorama, wider than you think.'],
-    'vertical': ['A tall, narrow wall: beside a door, in the entry, up the stairs', 'It wants height more than width.'],
-    'panoramic vertical': ['A slim column of wall, floor to ceiling', 'It wants one long, quiet vertical.'],
-    'square': ['A balanced spot: a nook, a bath, a pair side by side', 'It wants a square.']
-  };
-  var MOODS = [
-    { v: 'Warm and glowing', colors: ['red', 'orange', 'gold', 'yellow'], sw: ['#c0392b', '#e67e22', '#c9a227'], label: 'Warm and glowing', sub: 'Ember, amber, gold: the room feels lit from inside', after: 'Warmth settles around you. This is colour that changes how a room feels when you walk in.' },
-    { v: 'Cool and clear', colors: ['blue', 'turquoise', 'teal', 'green'], sw: ['#2e6fbf', '#1abc9c', '#3e8e41'], label: 'Cool and clear', sub: 'River, sky and leaf: the room breathes out', after: 'The air cools. Blue and green open the wall like a window.' },
-    { v: 'Jewel and dusk', colors: ['purple', 'pink'], sw: ['#7d4bb3', '#e58ab0', '#4b2a7a'], label: 'Jewel and dusk', sub: 'Violet, plum and rose: rich, a little dramatic', after: 'The light goes violet. This is the bold choice, and you are not sorry.' },
-    { v: 'Earth and quiet', colors: ['brown', 'black', 'white', 'gray'], sw: ['#7a5230', '#8c8c8c', '#f7f7f2'], label: 'Earth and quiet', sub: 'Stone, wood, snow and shadow: calm that lasts', after: 'Everything goes quiet. Stone and shadow, nothing shouting.' }
-  ];
+  var T = {"kicker": "Find the art for your wall", "title": "Choose your own art adventure", "q1_title": "What are you into?",
+    "q1_ask": "Pick a world. Five taps, and your piece finds you.", "all_label": "Show me everything", "all_sub": "All {n} pieces. I like surprises.",
+    "doors_title": "Pick a door", "doors_ask": "One of them hides your piece.", "open_all": "Open them all",
+    "deeper_title": "Go deeper", "deeper_ask": "Which way pulls you in?", "deeper_skip": "Surprise me", "sub_default": "{n} pieces down this path",
+    "room_title": "Where's it going?", "room_ask": "Pick the room. Your piece will hang right there, at its real size.", "room_skip": "Somewhere else",
+    "palette_title": "Which one stops you?", "palette_ask": "Don't think. Tap the one you can't stop looking at.",
+    "end_one_title": "This one's yours.", "end_many_title": "Your top {n}", "end_line": "The one you picked, then the ones most like it.",
+    "end_inroom": "Hanging in your {room}, at their real size.", "end_note": "Every print is made to order by Fine Art America, with a 30-day money-back guarantee.",
+    "more": "Show me more", "again": "Start over", "back": "Back",
+    "react": "Good eye.\nOoh, nice.\nYes. That one.\nBold. We like it.\nNow we're getting somewhere.\nStrong pick.\nYou've done this before."};
+  var DOORS = { abstract: { label: 'Abstract', sub: 'Colour and shape that make guests ask, what is that?' },
+    reality: { label: 'Reality', sub: 'A real place or thing, only sharper.' }, bw: { label: 'Black & White', sub: 'Light, shadow, nothing else.' } };
+  var HEX = { red: '#c0392b', orange: '#e67e22', yellow: '#f1c40f', gold: '#c9a227', green: '#3e8e41', turquoise: '#1abc9c', teal: '#008080',
+    blue: '#2e6fbf', purple: '#7d4bb3', pink: '#e58ab0', brown: '#7a5230', black: '#191919', white: '#f7f7f2', gray: '#8c8c8c' };
+  var SHOW = 8;
+
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function uniq(list, f) { var s = []; list.forEach(function (p) { [].concat(p[f] || []).forEach(function (v) { if (v && s.indexOf(v) < 0) s.push(v); }); }); return s.sort(); }
-  function has(p, mood) { return (p.color || []).some(function (c) { return mood.colors.indexOf(String(c).toLowerCase()) >= 0; }); }
-  function sample(pool, test) { for (var i = 0; i < pool.length; i++) if (pool[i].img && test(pool[i])) return pool[i].img; return ''; }
-  var NUM = ['one', 'two', 'three', 'four', 'five'];
-  var ABSTRACT = ['Abstract Glass Macro', 'Contemporary Abstract & Mixed Media', 'Spiritual, Mandala & Symbolic'];
-  function isAbstract(s) { return ABSTRACT.indexOf(s) >= 0; }
-  // each piece says whether it is abstract (p.abs, from what it shows); older data falls back to its collection
-  function absOf(p) { return typeof p.abs === 'boolean' ? p.abs : isAbstract(p.subject); }
-  function pickImg(pool, test) { var c = pool.filter(function (p) { return p.img && test(p); }); return c.length ? c[Math.floor(Math.random() * c.length)].img : ''; }
-  var WORLDS = [
-    { v: 'Abstract', abs: true, door: 'abstract', label: 'Abstract', sub: 'Open this one if you want colour that makes a guest stop and ask, what is that?', after: 'The door gives, and the world you know falls away. What is left is colour and light, and it is yours to read.' },
-    { v: 'Reality', abs: false, door: 'reality', label: 'Reality', sub: 'Open this one if you want a place you can step back into every time you walk past.', after: 'The old door swings on its hinges. Beyond it the world is as it is, only sharper, as if someone had wiped the glass.' }
-  ];
-
-  var CHAPTERS = [
-    { key: 'world', name: 'The threshold', title: 'welcome', scene: '',
-      options: function (pool, book) {
-        if (book && book.doors) {      // this book's own two doors: each piece knows which one it is behind (p.door)
-          return book.doors.map(function (d, i) { return { v: d.label, label: d.label, sub: d.sub, after: d.after, i: i, abs: i === 1, door: 'reality',
-            img: pickImg(pool, function (p) { return p.door === i; }) }; }).filter(function (o) { return pool.filter(function (p) { return p.door === o.i; }).length >= 3; });
-        } return WORLDS.filter(function (w) { return pool.some(function (p) { return absOf(p) === w.abs; }); }).map(function (w) { var o = {}; for (var k in w) o[k] = w[k]; o.img = (w.abs ? pickImg(pool, function (p) { return absOf(p); }) : pickImg(pool, function (p) { return p.subject === 'Pacific Northwest Landscapes'; }) || pickImg(pool, function (p) { return p.subject === 'Travel / Specialty / Projects'; })) || pickImg(pool, function (p) { return absOf(p) === w.abs; }); return o; }); },
-      test: function (p, o) { return typeof o.i === 'number' ? p.door === o.i : absOf(p) === o.abs; },
-      journal: function (j, o) { return typeof o.i === 'number' ? false : (j.subjects || []).some(function (s) { return isAbstract(s) === o.abs; }); } },
-    { key: 'subject', name: 'Further in', title: 'further in',
-      scene: 'You are through, and the passage draws you further in. It divides again. You do not need to know anything about art to choose: only which way you want to walk.',
-      options: function (pool) { return uniq(pool, 'subject').map(function (v) { var s = SUBJECT[v] || ['Explore ' + v, '', 'You step through, curious about what you will find.']; return { v: v, label: s[0], sub: s[1], img: sample(pool, function (p) { return p.subject === v; }), after: s[2] }; }); },
-      test: function (p, o) { return p.subject === o.v; }, journal: function (j, o) { return (j.subjects || []).indexOf(o.v) >= 0; } },
-    { key: 'shape', name: 'The wall', title: 'the wall',
-      scene: 'Somewhere in your home a wall is waiting for what you find here. You know the one. The room is finished, the furniture is in, and it has been bare long enough to start bothering you. Which wall is it?',
-      options: function (pool, book, cfg) { return uniq(pool, 'shape').map(function (v) { var w = WALL[v] || ['A ' + v + ' space', '']; return { v: v, label: w[0], sub: w[1], img: (cfg && cfg.walls && cfg.walls[v]) || sample(pool, function (p) { return p.shape === v; }), after: 'You hold the shape of that wall in your mind and carry it with you.' }; }); },
-      test: function (p, o) { return p.shape === o.v; }, journal: function (j, o) { return (j.shapes || []).indexOf(o.v) >= 0; } },
-    { key: 'color', name: 'The light', title: 'the light',
-      scene: 'As you go further the light begins to change. Think of the room the wall lives in, and how you want it to feel when you walk in each morning.',
-      options: function (pool) { return MOODS.filter(function (m) { return pool.some(function (p) { return has(p, m); }); }).map(function (m) { return { v: m.v, mood: m, label: m.label, sub: m.sub, sw: m.sw, img: sample(pool, function (p) { return has(p, m); }), after: m.after }; }); },
-      test: function (p, o) { return has(p, o.mood); }, journal: function (j, o) { return (j.colors || []).some(function (c) { return o.mood.colors.indexOf(c) >= 0; }); } },
-    { key: 'scale', name: 'The presence', title: 'the presence',
-      scene: 'One last question waits on the path. When a guest walks in, how much of the room should this piece claim?',
-      options: function (pool) {
-        var big = pool.filter(function (p) { return p.max_in >= 48; }).length, o = [];
-        if (big && big < pool.length) {
-          o.push({ v: 'A statement piece', big: true, label: 'Let it command the room', sub: 'Four feet wide or more. Only pieces that hold up at that size stay.', after: 'You want to feel it from across the room.' });
-          o.push({ v: 'Any size', big: false, label: 'Let it be a quiet companion', sub: 'A smaller piece you notice a little more each day.', after: 'It does not need to shout.' });
-        }
-        return o;
-      },
-      test: function (p, o) { return !o.big || p.max_in >= 48; }, journal: function () { return false; } }
-  ];
-
-  // Pictures on the way: art on the cover, behind each door (hanging in an empty room) and on each choice, a different
-  // piece for every option; only "The wall" shows empty rooms (cfg.walls, from the room photos), to choose the room by.
-  function blank(cfg, ch, opts, pool) {
-    var w = cfg.walls, used = {};
-    opts.forEach(function (o, k) {
-      if (ch.key === 'world') { if (w) { o.glimpse = o.img; o.img = (w.behind || [])[k] || o.img; } return; }
-      if (ch.key === 'shape' && w && w[o.v]) return;
-      var fits = pool.filter(function (p) { return p.img && !used[p.img] && ch.test(p, o); });
-      if (o.mood) {       // a piece whose main colour is the mood's own, where there is one
-        var main = fits.filter(function (p) { return (p.color || []).length && o.mood.colors.indexOf(String(p.color[0]).toLowerCase()) >= 0; });
-        if (main.length) fits = main;
-      }
-      o.img = fits.length ? fits[Math.floor(Math.random() * Math.min(fits.length, 12))].img : o.img;
-      if (o.img) used[o.img] = 1;
-    });
-    return opts;
+  function n(s, k) { return String(s).replace('{n}', k); }
+  function pieces(k) { return k + (k === 1 ? ' piece' : ' pieces'); }
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function bg(u) { return u ? ' style="background-image:url(\'' + esc(u).replace(/'/g, '%27') + '\')"' : ''; }
+  function words(w) {        // the words as changed in the Studio, laid over these
+    if (!w) return;
+    var t = w.text || {}; for (var k in t) if (t[k]) T[k] = t[k];
+    var d = w.doors || {}; for (var c in d) if (DOORS[c]) { DOORS[c].label = d[c].label || DOORS[c].label; DOORS[c].sub = d[c].sub || DOORS[c].sub; }
   }
+
   function start(root) {
-    var cfg = JSON.parse(root.getAttribute('data-adventure')), book = cfg.book || {}, ALL = cfg.items, JOURNAL = cfg.journal || [], steps = [], begun = false, shownEnd = 10;
-    function pool() { var list = ALL; steps.forEach(function (s) { if (s.option) list = list.filter(function (p) { return CHAPTERS[s.chapter].test(p, s.option); }); }); return list; }
-    function nextChapter() {
-      var from = steps.length ? steps[steps.length - 1].chapter + 1 : 0, left = pool();
-      for (var i = from; i < CHAPTERS.length; i++) {
-        if (left.length <= 1) break;
-        var opts = blank(cfg, CHAPTERS[i], CHAPTERS[i].options(left, book, cfg), left);
-        if (opts.length > 1) return { i: i, opts: opts };
-      }
+    var cfg = JSON.parse(root.getAttribute('data-adventure')), Q = cfg.quiz || {}, book = cfg.book || {}, ALL = (cfg.items || []).filter(function (p) { return p.img; });
+    words(cfg.words);
+    var BW = Q.bw || 'Black & White', SUBS = Q.subs || {}, reacts = String(T.react || '').split('\n').filter(Boolean);
+    var subjects = Q.subjects || uniq(ALL.map(function (p) { return p.subject; })).map(function (s) { return { key: s, label: s }; });
+    var picks = [], shown = SHOW, reaction = '';
+    // where the reader is: each answer narrows the pieces on the path
+    function inSubject(p, key) { return !key || (p.sections ? p.sections.indexOf(key) >= 0 : p.subject === key); }
+    function subjectKey() { var s = pick('subject'); return book.subject || (s ? s.v : ''); }
+    function catOf(p) { return subjectKey() !== BW && p.bw ? 'bw' : (p.abs ? 'abstract' : 'reality'); }
+    function pick(key) { for (var i = 0; i < picks.length; i++) if (picks[i].key === key) return picks[i].opt; return null; }
+    function pool() { return picks.reduce(function (list, s) { return s.opt && s.opt.test ? list.filter(s.opt.test) : list; }, book.subject ? ALL.filter(function (p) { return inSubject(p, book.subject); }) : ALL); }
+    function uniq(xs) { var o = []; xs.forEach(function (x) { if (x && o.indexOf(x) < 0) o.push(x); }); return o; }
+    function count(list, f) { var c = {}; list.forEach(function (p) { [].concat(f(p) || []).forEach(function (v) { if (v) c[v] = (c[v] || 0) + 1; }); }); return c; }
+    function shuffle(xs) { xs = xs.slice(); for (var i = xs.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = xs[i]; xs[i] = xs[j]; xs[j] = t; } return xs; }
+
+    // the five steps; each returns its options for the pieces still on the path, or null when it has nothing to ask
+    var STEPS = [
+      { key: 'subject', kind: 'tiles', title: function () { return T.q1_title; }, ask: function () { return T.q1_ask; },
+        options: function (left) {
+          if (book.subject) return null;
+          var o = subjects.map(function (s) { var k = left.filter(function (p) { return inSubject(p, s.key); }).length;
+            return k ? { v: s.key, label: s.label, sub: pieces(k), img: s.img, test: function (p) { return inSubject(p, s.key); } } : null; }).filter(Boolean);
+          return o.length > 1 ? o.concat([{ v: '', label: T.all_label, sub: n(T.all_sub, left.length), all: true }]) : null;
+        } },
+      { key: 'door', kind: 'doors', title: function () { return T.doors_title; },
+        ask: function () { var s = subjectKey(), sj = subjects.filter(function (x) { return x.key === s; })[0];
+          return '<span class="qz-hook">' + esc(sj && sj.hook || (s ? book.line : Q.hook_all) || '') + '</span> ' + esc(T.doors_ask); },
+        options: function (left) {
+          var pics = (Q.doors || {})[subjectKey()] || {}, c = count(left, catOf);
+          var o = ['abstract', 'reality', 'bw'].filter(function (k) { return c[k]; }).map(function (k) {
+            var own = left.filter(function (p) { return catOf(p) === k; });
+            return { v: DOORS[k].label, label: DOORS[k].label, sub: DOORS[k].sub, img: pics[k] || own[0].img, test: function (p) { return catOf(p) === k; } };
+          });
+          return o.length > 1 ? o : null;
+        }, skip: function () { return T.open_all; } },
+      { key: 'deeper', kind: 'words', title: function () { return T.deeper_title; }, ask: function () { return T.deeper_ask; },
+        options: function (left) {
+          var o;
+          if (subjectKey()) {        // the subject's subsections
+            var c = count(left, function (p) { return p.sub; });
+            o = Object.keys(c).sort(function (a, b) { return c[b] - c[a]; }).slice(0, 6).map(function (s) {
+              return { v: s, label: s, sub: SUBS[s] || n(T.sub_default, c[s]).replace(/^1 pieces/, '1 piece'), test: function (p) { return p.sub === s; } }; });
+          } else {                   // everything: its collections
+            o = subjects.map(function (s) { var k = left.filter(function (p) { return inSubject(p, s.key); }).length;
+              return k ? { v: s.label, label: s.label, sub: s.hook ? s.hook.split('. ')[0].replace(/\.$/, '') + '.' : n(T.sub_default, k), test: function (p) { return inSubject(p, s.key); } } : null; }).filter(Boolean);
+          }
+          return o.length > 1 ? o : null;
+        }, skip: function () { return T.deeper_skip; } },
+      { key: 'room', kind: 'rooms', title: function () { return T.room_title; }, ask: function () { return T.room_ask; },
+        options: function (left) {
+          var c = count(left, function (p) { return p.rooms; });
+          var o = (Q.rooms || []).filter(function (r) { return c[r.name]; }).map(function (r) {
+            return { v: r.name, label: r.name, sub: pieces(c[r.name]) + ' made for it', img: r.img, room: r, test: function (p) { return (p.rooms || []).indexOf(r.name) >= 0; } }; });
+          return o.length > 1 ? o : null;
+        }, skip: function () { return T.room_skip; } },
+      { key: 'palette', kind: 'palette', title: function () { return T.palette_title; }, ask: function () { return T.palette_ask; },
+        options: function (left) {
+          if (left.length < 2) return null;
+          // a piece for each main colour still on the path, the strongest of each, the rarest colours first
+          var by = {}; left.forEach(function (p) { var c = (p.color || [])[0] || 'other'; (by[c] = by[c] || []).push(p); });
+          var fams = Object.keys(by).sort(function (a, b) { return by[a].length - by[b].length; });
+          var o = shuffle(fams.slice(0, 6)).slice(0, 4).map(function (f) { var p = by[f][Math.floor(Math.random() * Math.min(3, by[f].length))];
+            return { v: p.title, label: (p.color || []).slice(0, 3).join(', '), piece: p, img: p.img, sw: (p.color || []).slice(0, 4).map(function (c) { return HEX[c] || '#999'; }) }; });
+          if (o.length < 2) o = left.slice(0, 4).map(function (p) { return { v: p.title, label: (p.color || []).slice(0, 3).join(', '), piece: p, img: p.img, sw: (p.color || []).slice(0, 4).map(function (c) { return HEX[c] || '#999'; }) }; });
+          return o.length > 1 ? o : null;
+        } }
+    ];
+
+    function next() {          // the next step with something to ask
+      var left = pool(), from = picks.length ? STEPS.map(function (s) { return s.key; }).indexOf(picks[picks.length - 1].key) + 1 : 0;
+      if (left.length < 2) return null;
+      for (var i = from; i < STEPS.length; i++) { var o = STEPS[i].options(left); if (o) return { i: i, opts: o }; }
       return null;
     }
-    function passage() {
-      var seen = {}, pick = null;
-      steps.forEach(function (s, n) {
-        if (!s.option) return;
-        var hit = null;
-        for (var i = 0; i < JOURNAL.length; i++) { if (!seen[JOURNAL[i].url] && CHAPTERS[s.chapter].journal(JOURNAL[i], s.option)) { hit = JOURNAL[i]; break; } }
-        if (hit) seen[hit.url] = 1;
-        if (n === steps.length - 1) pick = hit;
-      });
-      return pick ? '<aside class="adv-journal"><span>From the artist’s journal</span><a href="' + esc(pick.url) + '">' + esc(pick.title) + '</a>' + (pick.excerpt ? '<p>' + esc(pick.excerpt) + '</p>' : '') + '</aside>' : '';
+    function ahead(i) {        // how many steps could still come, for the progress bar
+      var k = 0; for (var j = i + 1; j < STEPS.length; j++) if (STEPS[j].key !== 'subject' || !book.subject) k++; return k;
     }
-    function trail() {
-      var parts = steps.filter(function (s) { return s.option; }).map(function (s) { return '<span><b>' + esc(CHAPTERS[s.chapter].name) + ':</b> ' + esc(s.option.v) + '</span>'; });
-      return parts.length ? '<div class="adv-trail" aria-label="Your path so far">' + parts.join('') + '</div>' : '';
+    function similar(first, list) {      // the pieces most like the one the reader picked
+      var fc = first.color || [];
+      function score(p) {
+        var s = 0, pc = p.color || [];
+        if (pc[0] && pc[0] === fc[0]) s += 4;
+        pc.forEach(function (c) { if (fc.indexOf(c) >= 0) s += 1.5; });
+        if (p.sub && p.sub === first.sub) s += 2;
+        if (p.subject === first.subject) s += 1;
+        if (!!p.abs === !!first.abs) s += 1;
+        if (!!p.bw === !!first.bw) s += 1;
+        if (p.shape && p.shape === first.shape) s += .5;
+        return s;
+      }
+      return list.filter(function (p) { return p !== first; }).map(function (p) { return [score(p), p]; }).sort(function (a, b) { return b[0] - a[0]; }).map(function (x) { return x[1]; });
     }
-    function controls() { return '<div class="adv-ctl"><button type="button" data-a="back">' + (steps.length ? 'Turn back one page' : 'Back to the cover') + '</button>' + (steps.length ? '<button type="button" data-a="restart">Start a new adventure</button>' : '') + '</div>'; }
-    function cover() {
-      var withStory = ALL.filter(function (p) { return p.img && p.posts && p.posts.length; }), any = ALL.filter(function (p) { return p.img; });
-      var from = withStory.length >= 3 ? withStory : any, art = from.length ? from[Math.floor(Math.random() * from.length)] : null;
-      root.innerHTML = '<div class="adv-cover"><div class="adv-cover-in">' +
-        '<div class="adv-kicker">An interactive story · about two minutes</div>' +
-        '<div class="adv-cover-title" role="heading" aria-level="2">Choose Your Own<br><em>' + esc(book.em || 'Art Adventure') + '</em></div>' +
-        (art ? '<div class="adv-plate"><img src="' + esc(art.img) + '" alt="' + esc(art.title) + '"></div>' : '') +
-        '<p class="adv-cover-line">That wall has been bare for months.<br>' + esc(book.line || 'Behind one of two doors is the piece that ends the wait.') + '</p>' +
-        '<button type="button" class="adv-begin">Open the book and find yours</button>' +
-        '<div class="adv-cover-meta">' + ALL.length + ' pieces' + (JOURNAL.length ? ' · ' + JOURNAL.length + (JOURNAL.length === 1 ? ' story' : ' stories') : '') + ' · five small questions · nothing to sign up for</div>' +
-        '<div class="adv-byline">Omaste Witkowski</div></div></div>';
-      root.querySelector('.adv-begin').onclick = function () { begun = true; draw(); focus(); };
+
+    function bar(done, total) {
+      return '<div class="qz-top"><div class="qz-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + total + '" aria-valuenow="' + done + '"><i style="width:' + Math.round(100 * done / Math.max(1, total)) + '%"></i></div>' +
+        (picks.length ? '<button type="button" class="qz-back" data-a="back">&larr; ' + esc(T.back) + '</button>' : '') + '</div>';
     }
-    function bg(u) { return u ? ' style="background-image:url(\'' + esc(u).replace(/'/g, '%27') + '\')"' : ''; }
-    function welcome() {
-      var opts = blank(cfg, CHAPTERS[0], CHAPTERS[0].options(ALL, book, cfg), ALL), doors = cfg.doors || {}, pics = ALL.filter(function (p) { return p.img; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
-      root.innerHTML = '<div class="adv-page adv-welcome"><div class="adv-chap">Chapter one</div><h3 class="adv-title">Welcome</h3>' +
-        '<p class="adv-scene">You finished the room. The sofa is in, the paint is dry, and one wall is still bare. All you wanted was for the house to finally feel like yours. So you went looking. You scrolled, you saved a few, you nearly bought the one everybody has. Somewhere past the thousandth picture they all began to look the same, and you started to wonder whether you are just not an art person.</p>' +
-        (pics.length === 3 ? '<div class="adv-strip">' + pics.map(function (p) { return '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '">'; }).join('') + '</div>' : '') +
-        '<p class="adv-plain">I am Omaste Witkowski. I used to photograph rooms for architects and builders. One long winter day I turned a wide-angle lens around backwards and held it a thumb’s width from a piece of handblown glass made by my friend Garth Mudge at Glassworks in Winthrop, Washington. What came through the lens was not glass any more. It was light moving through colour, a whole world in a few inches. That was the day I understood why searching never works. Nobody finds their piece by typing it into a box. You know it when it stops you. Art is felt, not seen, and you are exactly as qualified to feel it as anyone.' + (cfg.about ? ' <a class="adv-more-story" href="' + esc(cfg.about) + '">Read how it began</a>' : '') + '</p>' +
-        '<p class="adv-plain">So I did not build you a gallery to scroll. I built a short story, and you are the one walking through it. Five small questions. Nothing to know about art, no wrong answers, nothing to sign up for. Every answer opens a door, and the last door opens onto the piece, or the handful of pieces, that fits the wall you have in mind.</p>' +
-        '<p class="adv-ask">' + (opts.length > 1 ? 'Two doors are in front of you. Your piece is behind one of them. Which do you open?' : 'A door stands in front of you.') + '</p>' +
-        '<div class="adv-gates">' + opts.map(function (o, k) {
-          var sc = o.glimpse && o.img && cfg.walls && cfg.walls.rooms && cfg.walls.rooms[o.img] && (cfg.walls.rooms[o.img].scenes || [])[0];
-          return '<button type="button" class="adv-gate" data-k="' + k + '"><span class="adv-frame"><span class="adv-behind"' + (o.img ? ' style="background-image:url(\'' + esc(o.img).replace(/'/g, '%27') + '\')"' : '') + '>' +
-            (o.glimpse && o.glimpse !== o.img ? '<img class="adv-glimpse" alt="" src="' + esc(o.glimpse) + '" style="left:' + (o.abs ? 50 : 68) + '%;top:' + Math.max(28, Math.min(46, sc ? sc.y : 38)) + '%">' : '') + '</span>' +
-            (o.abs ? '<span class="adv-leaf adv-half adv-l"' + bg(doors[o.door]) + '></span><span class="adv-leaf adv-half adv-r"' + bg(doors[o.door]) + '></span>' : '<span class="adv-leaf"' + bg(doors[o.door]) + '></span>') + '</span>' +
-            '<b>' + esc(o.label) + '</b><small>' + esc(o.sub) + '</small></button>';
-        }).join('') + '</div>' +
-        (opts.length > 1 ? '<button type="button" class="adv-choice adv-skip" data-k="skip">I cannot choose. Open both.</button>' : '') + controls() + '</div>';
-      [].forEach.call(root.querySelectorAll('.adv-gate, .adv-skip'), function (b) {
-        b.onclick = function () { steps.push({ chapter: 0, option: b.getAttribute('data-k') === 'skip' ? null : opts[+b.getAttribute('data-k')] }); draw(); focus(); };
-      });
-      wire();
+    function option(o, k, kind) {
+      if (kind === 'words') return '<button type="button" class="qz-opt qz-word" data-k="' + k + '"><b>' + esc(o.label) + '</b><small>' + esc(o.sub) + '</small></button>';
+      if (kind === 'doors') return '<button type="button" class="qz-opt qz-door" data-k="' + k + '"><span class="qz-arch"' + bg(o.img) + '></span><b>' + esc(o.label) + '</b><small>' + esc(o.sub) + '</small></button>';
+      if (kind === 'palette') return '<button type="button" class="qz-opt qz-pal" data-k="' + k + '"><span class="qz-img"' + bg(o.img) + '></span><span class="qz-sw">' +
+        o.sw.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</span><small>' + esc(cap(o.label)) + '</small></button>';
+      return '<button type="button" class="qz-opt qz-tile' + (o.all ? ' qz-all' : '') + '" data-k="' + k + '">' + (o.img ? '<span class="qz-img"' + bg(o.img) + '></span>' : '<span class="qz-img qz-noimg">&#10022;</span>') +
+        '<span class="qz-tx"><b>' + esc(o.label) + '</b><small>' + esc(o.sub) + '</small></span></button>';
     }
-    function wire() {
-      [].forEach.call(root.querySelectorAll('[data-a]'), function (b) {
-        b.onclick = function () { if (b.getAttribute('data-a') === 'restart') { steps = []; } else if (steps.length) steps.pop(); else begun = false; draw(); focus(); };
-      });
-    }
+
     function draw(keep) {
-      if (keep !== true) shownEnd = 10;
+      if (keep !== true) shown = SHOW;
       if (!ALL.length) { root.innerHTML = '<p>The adventure opens as soon as the first artworks are published.</p>'; return; }
-      if (!begun) { cover(); return; }
-      var last = steps.length ? steps[steps.length - 1] : null, nx = nextChapter(), left = pool();
-      var asked = steps.length, html = '<div class="adv-page">' + trail();
-      if (last && last.option) html += '<p class="adv-after">' + esc(last.option.after) + '</p>' + passage();
-      if (!steps.length) { welcome(); return; }
+      var nx = next(), done = picks.length, total = done + (nx ? 1 + ahead(nx.i) : 0), html = '<div class="qz">';
       if (nx) {
-        var ch = CHAPTERS[nx.i];
-        html += '<div class="adv-chap">Chapter ' + (NUM[asked] || asked + 1) + '</div><h3 class="adv-title">' + esc(ch.title.charAt(0).toUpperCase() + ch.title.slice(1)) + '</h3><p class="adv-scene">' + esc(ch.scene) + '</p>' +
-          '<div class="adv-choices' + (nx.opts.some(function (o) { return o.img; }) ? ' adv-doors' : '') + '">' +
-          nx.opts.map(function (o, k) {
-            return '<button type="button" class="adv-choice" data-k="' + k + '">' + (o.img ? '<span class="adv-thumb" style="background-image:url(\'' + esc(o.img).replace(/'/g, '%27') + '\')"></span>' : '') +
-              '<span class="adv-txt">' + (o.sw ? '<span class="adv-sws">' + o.sw.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</span>' : '') + '<b>' + esc(o.label) + '</b>' + (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</span></button>';
-          }).join('') + '</div>' +
-          '<button type="button" class="adv-choice adv-skip" data-k="skip">I have no preference. Keep walking.</button>' +
-          '<p class="adv-left">' + left.length + (left.length === 1 ? ' piece is' : ' pieces are') + ' still on your path.</p>';
+        var st = STEPS[nx.i], opts = nx.opts;
+        html += bar(done, total) + (reaction ? '<p class="qz-react">' + esc(reaction) + '</p>' : '') +
+          (!done && !book.subject ? '<p class="qz-kicker">' + esc(T.kicker) + '</p>' : '') +
+          (!done && book.subject && book.em ? '<p class="qz-kicker">Choose your own ' + esc(book.em.toLowerCase()) + '</p>' : '') +
+          '<h3 class="adv-title qz-title">' + esc(st.title()) + '</h3><p class="qz-ask">' + (st.key === 'door' ? st.ask() : esc(st.ask())) + '</p>' +
+          '<div class="qz-opts qz-' + st.kind + '">' + opts.map(function (o, k) { return option(o, k, st.kind); }).join('') + '</div>' +
+          (st.skip ? '<button type="button" class="qz-skip" data-k="skip">' + esc(st.skip()) + '</button>' : '');
+        root.innerHTML = html + '</div>';
+        [].forEach.call(root.querySelectorAll('[data-k]'), function (b) {
+          b.onclick = function () {
+            var k = b.getAttribute('data-k');
+            picks.push({ key: st.key, opt: k === 'skip' ? null : opts[+k] });
+            reaction = k === 'skip' ? '' : reacts[Math.floor(Math.random() * reacts.length)] || '';
+            draw(); focus();
+          };
+        });
       } else {
-        // the wall the reader chose (or, without one, the room of the light they chose): every piece hangs there
-        var room = null, w = cfg.walls || {};
-        if (window.FAASCWall && w.rooms) {
-          var pickedWall = steps.filter(function (s) { return s.option && CHAPTERS[s.chapter].key === 'shape'; })[0];
-          var pickedMood = steps.filter(function (s) { return s.option && CHAPTERS[s.chapter].key === 'color'; })[0];
-          var im = (pickedWall && w[pickedWall.option.v]) || (pickedMood && (w.moods || {})[['warm', 'cool', 'jewel', 'earth'][MOODS.indexOf(pickedMood.option.mood)]]) || w.cover;
-          room = w.rooms[im] || null;
-        }
-        html += '<div class="adv-chap">The last page</div><h3 class="adv-title">' + (left.length === 1 ? 'You found it' : left.length + ' pieces were waiting for you') + '</h3>' +
-          '<p class="adv-scene">' + (left.length === 1 ? 'The path narrows to a single frame, lit as if it had been expecting you.' : 'The path opens into a small room. Everything here answers the choices you made. You will know yours when you see it.') + (room ? ' Here ' + (left.length === 1 ? 'it hangs' : 'they hang') + ' on the wall you chose, at ' + (left.length === 1 ? 'its' : 'their') + ' real size.' : '') + '</p><div class="adv-found">' +
-          left.slice(0, shownEnd).map(function (p, k) {
-            return '<div class="adv-piece">' + (room ? '<div class="adv-inroom" data-k="' + k + '" role="button" tabindex="0" aria-label="See ' + esc(p.title) + ' larger, on the wall you chose"></div>'
-              : p.img ? '<a href="' + esc(p.story) + '"><img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></a>' : '') +
-              '<div class="adv-pb"><div class="adv-pt">' + esc(p.title) + '</div><div class="adv-pd">' + esc(p.why) + '</div>' +
+        // the results: the piece the reader picked first, then the pieces most like it, in the room they chose
+        var chosen = pick('palette'), roomPick = pick('room'), room = roomPick && roomPick.room && roomPick.room.wall, left = pool(), list;
+        if (chosen) {
+          var wider = left.length >= SHOW ? left : uniq(left.concat(ALL.filter(function (p) { return inSubject(p, subjectKey()); })).concat(ALL));
+          list = [chosen.piece].concat(similar(chosen.piece, wider));
+        } else list = left;
+        html += bar(total, total) + (reaction ? '<p class="qz-react">' + esc(reaction) + '</p>' : '') +
+          '<h3 class="adv-title qz-title">' + esc(list.length === 1 ? T.end_one_title : n(T.end_many_title, Math.min(shown, list.length))) + '</h3>' +
+          '<p class="qz-ask">' + esc(chosen ? T.end_line : '') + (room ? ' ' + esc(n(T.end_inroom, '').replace('{room}', roomPick.label.toLowerCase())) : '') + '</p>' +
+          '<div class="adv-found qz-found">' + list.slice(0, shown).map(function (p, k) {
+            return '<div class="adv-piece' + (k === 0 && chosen ? ' qz-first' : '') + '">' + (room && window.FAASCWall ? '<div class="adv-inroom" data-r="' + k + '" role="button" tabindex="0" aria-label="See ' + esc(p.title) + ' larger, in the room"></div>'
+              : '<a href="' + esc(p.story) + '"><img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></a>') +
+              '<div class="adv-pb"><div class="adv-pt">' + esc(p.title) + '</div>' + (p.why ? '<div class="adv-pd">' + esc(p.why) + '</div>' : '') +
               ((p.posts && p.posts.length) ? p.posts.map(function (s) { return '<a class="adv-story" href="' + esc(s.url) + '">Read: ' + esc(s.title) + '</a>'; }).join('') : '<a class="adv-story" href="' + esc(p.story) + '">See this piece</a>') +
               (p.buy ? '<a class="adv-buy" href="' + esc(p.buy) + '" target="_blank" rel="noopener">' + esc(cfg.cta) + '</a>' : '') + '</div></div>';
-          }).join('') + '</div>' + (left.length > shownEnd ? '<button type="button" class="adv-more">Show ' + Math.min(10, left.length - shownEnd) + ' more (' + (left.length - shownEnd) + ' left)</button>' : '') +
-          (room && w.myroom ? '<div class="adv-ownwall"><div><b>Now picture them on your own wall</b><span>Take a photo of your wall, mark where the art would go, and every piece hangs in it at its real size.</span></div><a href="' + esc(w.myroom) + '">Try it with your wall</a></div>' : '') +
-          '<div class="adv-doubt"><b>One last doubt usually shows up about now.</b> What if it is too small, or wrong for the room? Two things settle it.' +
-          (cfg.gallery ? ' You can <a href="' + esc(cfg.gallery) + '">see any piece at true size over a sofa in the Gallery</a>.' : ' Mark the size on your wall with painter’s tape and live with it for a day.') +
-          ' And Fine Art America makes each print to order, with a 30-day money-back guarantee.</div>' +
-          '<p class="adv-turn">Now picture walking in tomorrow. The wall is finished. The room finally reads as yours, and when a guest asks where you found it, you have the story.</p>';
+          }).join('') + '</div>' + (list.length > shown ? '<button type="button" class="adv-more">' + esc(T.more) + '</button>' : '') +
+          (room && Q.myroom ? '<p class="qz-note"><a href="' + esc(Q.myroom) + '">Try them on a photo of your own wall</a></p>' : '') +
+          '<p class="qz-note">' + esc(T.end_note) + '</p><div class="qz-end"><button type="button" class="qz-skip" data-a="again">' + esc(T.again) + '</button></div>';
+        root.innerHTML = html + '</div>';
+        var mb = root.querySelector('.adv-more'); if (mb) mb.onclick = function () { shown += SHOW; draw(true); };
+        if (room && window.FAASCWall) [].forEach.call(root.querySelectorAll('.adv-inroom'), function (el) {
+          var p = list[+el.getAttribute('data-r')], piece = { title: p.title, img: p.img, buy: p.buy, max_in: p.max_in, story: p.story };
+          window.FAASCWall.render(el, { piece: piece, rooms: [room], room: room.slug, compact: true });
+          var big = function () { window.FAASCWall.open({ piece: piece, rooms: [room], room: room.slug, cta: cfg.cta }); };
+          el.onclick = big; el.onkeydown = function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); big(); } };
+        });
       }
-      root.innerHTML = html + controls() + '</div>';
-      if (nx) [].forEach.call(root.querySelectorAll('.adv-choice'), function (b) {
-        b.onclick = function () { steps.push({ chapter: nx.i, option: b.getAttribute('data-k') === 'skip' ? null : nx.opts[+b.getAttribute('data-k')] }); draw(); focus(); };
+      [].forEach.call(root.querySelectorAll('[data-a]'), function (b) {
+        b.onclick = function () { if (b.getAttribute('data-a') === 'again') picks = []; else picks.pop(); reaction = ''; draw(); focus(); };
       });
-      var mb = root.querySelector('.adv-more'); if (mb) mb.onclick = function () { shownEnd += 10; draw(true); };
-      if (!nx && room) [].forEach.call(root.querySelectorAll('.adv-inroom'), function (el) {
-        var p = left[+el.getAttribute('data-k')], piece = { title: p.title, img: p.img, buy: p.buy, max_in: p.max_in, story: p.story };
-        window.FAASCWall.render(el, { piece: piece, rooms: [room], room: room.slug, compact: true });
-        var big = function () { window.FAASCWall.open({ piece: piece, rooms: [room], room: room.slug, cta: cfg.cta }); };
-        el.onclick = big; el.onkeydown = function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); big(); } };
-      });
-      wire();
     }
-    function focus() { var t = root.querySelector('.adv-title, .adv-cover-title'); if (t) { t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true }); } if (root.scrollIntoView && root.getBoundingClientRect().top < 0) root.scrollIntoView({ behavior: 'smooth' }); }
+    function focus() { var t = root.querySelector('.qz-title'); if (t) { t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true }); } if (root.getBoundingClientRect().top < 0) root.scrollIntoView({ behavior: 'smooth' }); }
     draw();
   }
   function init() { [].forEach.call(document.querySelectorAll('.faasc-adventure[data-adventure]'), start); }

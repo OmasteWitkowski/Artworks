@@ -164,3 +164,45 @@
 .faasc-curator .cur-me figcaption{font:15px/1.35 system-ui,sans-serif;color:#e9e2d4}.faasc-curator .cur-me b{display:block;font:400 20px Georgia,serif;color:#fffaf0}.faasc-curator .cur-me span{font-size:13px;letter-spacing:.06em;color:#d9b77a}
 .faasc-curator .cur-hosted .cur-ask{margin-top:14px}
 @media(max-width:560px){.faasc-curator .cur-me img{width:104px;height:104px}}
+/* the art adventure as a quick quiz: one question at a time, big tappable answers, a bar that fills as you go */
+.faasc-adventure .qz{background:#fffdf8;border:1px solid #e6dcc8;border-radius:16px;padding:22px 26px 28px;box-shadow:0 10px 30px rgba(60,40,20,.08);color:#2a2320;animation:qzIn .35s ease-out}
+@keyframes qzIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.faasc-adventure .qz-top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.faasc-adventure .qz-bar{flex:1;height:6px;border-radius:6px;background:#eee5d4;overflow:hidden}.faasc-adventure .qz-bar i{display:block;height:100%;background:linear-gradient(90deg,#d97a3a,#b4501e);border-radius:6px;transition:width .4s}
+.faasc-adventure .qz-back{background:none;border:0;color:#8a6a4a;font:600 14px system-ui,sans-serif;cursor:pointer;padding:4px 0}
+.faasc-adventure .qz-react{text-align:center;font:italic 600 17px Georgia,serif;color:#b4501e;margin:0 0 6px;animation:qzPop .5s ease-out}
+@keyframes qzPop{0%{opacity:0;transform:scale(.8)}60%{opacity:1;transform:scale(1.06)}100%{transform:none}}
+.faasc-adventure .qz-kicker{text-align:center;font:600 12px system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#b4501e;margin:0 0 4px}
+.faasc-adventure .qz .qz-title{text-align:center;font:400 34px/1.15 Georgia,serif;margin:4px 0 8px;outline:none}
+.faasc-adventure .qz-ask{text-align:center;font:17px/1.5 Georgia,serif;color:#5a4a36;max-width:560px;margin:0 auto 22px}
+.faasc-adventure .qz-hook{display:block;font-style:italic;color:#2a2320;margin-bottom:6px}
+.faasc-adventure .qz-opts{display:grid;gap:12px}
+.faasc-adventure .qz-opt{border:1px solid #e2d6bf;background:#fff;border-radius:14px;cursor:pointer;color:#2a2320;font-family:inherit;text-align:left;padding:0;overflow:hidden;
+  transition:transform .15s,box-shadow .15s,border-color .15s}
+.faasc-adventure .qz-opt:hover,.faasc-adventure .qz-opt:focus-visible{transform:translateY(-3px);border-color:#b4501e;box-shadow:0 10px 22px rgba(120,60,20,.16);outline:none}
+.faasc-adventure .qz-opt:active{transform:scale(.97)}
+.faasc-adventure .qz-opt b{display:block;font:400 19px/1.25 Georgia,serif}.faasc-adventure .qz-opt small{display:block;font:14px/1.4 system-ui,sans-serif;color:#6f604a;margin-top:3px}
+.faasc-adventure .qz-img{display:block;aspect-ratio:4/3;background:#eee center/cover no-repeat}
+.faasc-adventure .qz-noimg{display:grid;place-items:center;font-size:40px;color:#fff;background:linear-gradient(135deg,#d97a3a,#7d4bb3 50%,#2e6fbf)}
+.faasc-adventure .qz-tiles{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}.faasc-adventure .qz-tx{display:block;padding:10px 12px 12px}
+.faasc-adventure .qz-doors{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));max-width:720px;margin:0 auto}
+.faasc-adventure .qz-door{text-align:center;padding:14px 14px 16px;background:#fbf6ec}
+.faasc-adventure .qz-arch{display:block;aspect-ratio:3/4.6;border-radius:999px 999px 8px 8px;background:#3a2a1e center/cover no-repeat;box-shadow:inset 0 0 0 6px #6e4b2f,0 8px 16px rgba(0,0,0,.2);margin-bottom:12px;transition:transform .25s}
+.faasc-adventure .qz-door:hover .qz-arch{transform:scale(1.03)}
+.faasc-adventure .qz-words{max-width:600px;margin:0 auto}.faasc-adventure .qz-word{padding:16px 20px;border-left:5px solid #d97a3a}
+.faasc-adventure .qz-rooms{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.faasc-adventure .qz-rooms .qz-tx{padding:10px 12px}
+.faasc-adventure .qz-palette{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));max-width:760px;margin:0 auto}
+.faasc-adventure .qz-pal .qz-img{aspect-ratio:1}.faasc-adventure .qz-sw{display:flex;height:22px}.faasc-adventure .qz-sw i{flex:1}
+.faasc-adventure .qz-pal small{padding:8px 10px 10px;text-align:center}
+.faasc-adventure .qz-skip{display:block;margin:18px auto 0;background:none;border:2px dashed #c9b48e;border-radius:999px;padding:10px 22px;font:600 15px system-ui,sans-serif;color:#6f4a2a;cursor:pointer}
+.faasc-adventure .qz-skip:hover{border-color:#b4501e;color:#b4501e}
+.faasc-adventure .qz-found{margin-top:10px}.faasc-adventure .qz-first{box-shadow:0 0 0 3px #b4501e}
+.faasc-adventure .qz-note{text-align:center;font:14px/1.5 system-ui,sans-serif;color:#6f604a;margin:18px 0 0}.faasc-adventure .qz-end{margin-top:6px}
+@media(max-width:600px){.faasc-adventure .qz{padding:16px 14px 22px;border-radius:12px}.faasc-adventure .qz .qz-title{font-size:27px}
+  .faasc-adventure .qz-tiles,.faasc-adventure .qz-rooms{grid-template-columns:repeat(2,1fr)}.faasc-adventure .qz-doors{grid-template-columns:repeat(3,1fr);gap:8px}
+  .faasc-adventure .qz-door{padding:8px 6px 10px}.faasc-adventure .qz-door b{font-size:15px}.faasc-adventure .qz-door small{display:none}.faasc-adventure .qz-palette{grid-template-columns:repeat(2,1fr)}}
+@media(prefers-reduced-motion:reduce){.faasc-adventure .qz,.faasc-adventure .qz-react{animation:none}.faasc-adventure .qz-opt,.faasc-adventure .qz-arch{transition:none}}
+.faasc-adventure .qz-doors{grid-template-columns:repeat(auto-fit,minmax(150px,200px));justify-content:center}
+.faasc-adventure .qz-found .adv-pd{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:600px){.faasc-adventure .qz-doors{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}}

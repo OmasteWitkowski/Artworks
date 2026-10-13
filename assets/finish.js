@@ -23,13 +23,16 @@
     return '<div class="fin-row"><b>' + name + '</b><span>' + list.map(function (x, n) {
       return '<button type="button" data-' + name.toLowerCase().replace(/\W/g, '') + '="' + n + '" aria-pressed="' + (x === cur) + '">' + (sw ? '<i style="background:' + (x[sw] && x[sw] !== 'mirror' ? x[sw] : 'linear-gradient(135deg,#ccc,#888)') + '"></i>' : '') + esc(x[0]) + '</button>'; }).join('') + '</span></div>';
   }
-  function finish(root) {
-    var cfg = JSON.parse(root.getAttribute('data-finish')), prices = cfg.prices || {};
-    var st = { k: 'framed-print', frame: FRAMES[0], mat: MATS[1], side: SIDES[0], mount: MOUNTS[0] };
+  // cfg.kinds narrows the print types offered; cfg.frame and cfg.mat (names) choose where it starts
+  function finish(root, given) {
+    var cfg = given || JSON.parse(root.getAttribute('data-finish')), prices = cfg.prices || {};
+    var kinds = KINDS.filter(function (x) { return !cfg.kinds || cfg.kinds.indexOf(x[0]) >= 0; }); if (!kinds.length) kinds = KINDS;
+    function named(list, n, d) { return list.filter(function (x) { return x[0] === n; })[0] || d; }
+    var st = { k: kinds[0][0], frame: named(FRAMES, cfg.frame, FRAMES[0]), mat: named(MATS, cfg.mat, MATS[1]), side: SIDES[0], mount: MOUNTS[0] };
     function render() {
       var name = KINDS.filter(function (x) { return x[0] === st.k; })[0][1], pr = prices[st.k];
       root.innerHTML = '<div class="fin"><div class="fin-stage">' + draw(cfg.img, st.k, st) + '</div><div class="fin-side">' +
-        '<div class="fin-kinds" role="group" aria-label="Print type">' + KINDS.map(function (x) { return '<button type="button" data-k="' + x[0] + '" aria-pressed="' + (x[0] === st.k) + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' +
+        '<div class="fin-kinds" role="group" aria-label="Print type">' + (kinds.length < 2 ? [] : kinds).map(function (x) { return '<button type="button" data-k="' + x[0] + '" aria-pressed="' + (x[0] === st.k) + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' +
         (st.k === 'framed-print' ? chips('Frame', FRAMES, st.frame, 1) + chips('Mat', MATS, st.mat, 1) : '') +
         (st.k === 'canvas-print' ? chips('Sides', SIDES, st.side, 1) : '') +
         (st.k === 'acrylic-print' ? chips('Mount', MOUNTS, st.mount) : '') +
@@ -51,8 +54,9 @@
     function go(d) { at = (at + d + imgs.length) % imgs.length; [].forEach.call(mk.querySelectorAll('img'), function (im) { im.src = imgs[at]; }); if (mk.style.getPropertyValue('--side')) mk.style.setProperty('--side', 'url(' + imgs[at] + ')'); }
     box.querySelector('.pr-prev').onclick = function () { go(-1); }; box.querySelector('.pr-next').onclick = function () { go(1); };
   }
+  window.FAASCFinish = { render: finish };
   function init() {
-    [].forEach.call(document.querySelectorAll('.faasc-finish[data-finish]'), finish);
+    [].forEach.call(document.querySelectorAll('.faasc-finish[data-finish]'), function (el) { finish(el); });
     [].forEach.call(document.querySelectorAll('.mk[data-imgs]'), stepper);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
