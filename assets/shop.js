@@ -24,21 +24,21 @@
     ['color', 'Colour', function (p) { return p.color || []; }],
     ['shape', 'Wall shape', function (p) { return p.shape ? [SHAPES[p.shape] || p.shape] : []; }],
     ['room', 'Room', function (p) { return p.rooms || []; }]];
-  var SORTS = [['pop', 'Most popular'], ['new', 'Newest'], ['big', 'Largest prints'], ['az', 'Title A to Z']];
+  var SORTS = [['rel', 'Most relevant'], ['pop', 'Most popular'], ['new', 'Newest'], ['big', 'Largest prints'], ['az', 'Title A to Z']];
 
   function mount(el, items, o) {
     o = o || {};
-    var st = { q: '', product: '', style: '', sort: 'pop', f: {}, shown: o.per || 24 };
+    var st = { q: '', product: '', style: '', sort: 'rel', f: {}, shown: o.per || 24 };
     FACETS.forEach(function (f) { st.f[f[0]] = []; });
     if (o.url) {           // a link can carry its filters: all.html?subject=Hawaii+%26+the+Kohala+Coast&product=framed-print
       var u = new URLSearchParams(location.search);
-      st.q = u.get('q') || ''; st.product = u.get('product') || ''; st.style = u.get('style') || ''; st.sort = u.get('sort') || 'pop';
+      st.q = u.get('q') || ''; st.product = u.get('product') || ''; st.style = u.get('style') || ''; st.sort = u.get('sort') || 'rel';
       FACETS.forEach(function (f) { st.f[f[0]] = u.getAll(f[0]); });
     }
     function save() {
       if (!o.url) return;
       var u = new URLSearchParams();
-      if (st.q) u.set('q', st.q); if (st.product) u.set('product', st.product); if (st.style) u.set('style', st.style); if (st.sort !== 'pop') u.set('sort', st.sort);
+      if (st.q) u.set('q', st.q); if (st.product) u.set('product', st.product); if (st.style) u.set('style', st.style); if (st.sort !== 'rel') u.set('sort', st.sort);
       FACETS.forEach(function (f) { st.f[f[0]].forEach(function (v) { u.append(f[0], v); }); });
       try { history.replaceState(null, '', location.pathname + (u.toString() ? '?' + u : '') + location.hash); } catch (e) { }
     }
@@ -56,7 +56,11 @@
       var c = {}; items.forEach(function (p) { if (pass(p, key)) read(p).forEach(function (v) { c[v] = (c[v] || 0) + 1; }); }); return c;
     }
     function sorted(list) {
-      var by = { pop: function (a, b) { return (b.pop || 0) - (a.pop || 0); }, new: function (a, b) { return String(b.up || '').localeCompare(String(a.up || '')); },
+      // most relevant: how well a piece answers the search (its title counts most), then how popular it is
+      var ws = st.q.toLowerCase().split(/\s+/).filter(Boolean);
+      list.forEach(function (p) { var t = ' ' + p.title.toLowerCase() + ' ', n = o.score ? o.score(p) : 0;
+        ws.forEach(function (w) { n += t.indexOf(' ' + w) >= 0 ? 3 : t.indexOf(w) >= 0 ? 2 : 1; }); p._s = n; });
+      var by = { rel: function (a, b) { return b._s - a._s || (b.pop || 0) - (a.pop || 0); }, pop: function (a, b) { return (b.pop || 0) - (a.pop || 0); }, new: function (a, b) { return String(b.up || '').localeCompare(String(a.up || '')); },
         big: function (a, b) { return (b.max_in || 0) - (a.max_in || 0); }, az: function (a, b) { return a.title.localeCompare(b.title); } }[st.sort];
       return list.slice().sort(by);
     }

@@ -205,7 +205,10 @@
         '<form class="cur-form cur-form2"><input type="text" class="cur-in" aria-label="Ask for something else" placeholder="Or tell me what to change: more blue, a flower, taller…" maxlength="140"><button type="submit">Show me</button></form>' + topicChips() + '</div>';
       // the curator's picks, refined like FAA's shop: product, medium, collection, place, colour, room, and a search within them
       var sh = root.querySelector('.cur-shop');
-      if (sh && left.length) window.FAASCShop.mount(sh, left, { note: why, onWall: onWall, cta: cfg.cta, per: 12, search: 'Search within these: a place, a colour, a word…' });
+      var asked = []; picked.forEach(function (x) { String(x.label).toLowerCase().split(/[^a-z]+/).forEach(function (w) { if (w.length > 3 && STOP.indexOf(w) < 0) asked.push(w.slice(0, 6)); }); });
+      // most relevant first: pieces whose own title names what was asked for ("butterflies" puts the butterflies before the birds), then the most popular
+      if (sh && left.length) window.FAASCShop.mount(sh, left, { score: function (p) { var t = p.title.toLowerCase(); return asked.filter(function (w) { return t.indexOf(w) >= 0; }).length * 3; },
+        note: why, onWall: onWall, cta: cfg.cta, per: 12, search: 'Search within these: a place, a colour, a word…' });
       var mb = root.querySelector('.cur-more'); if (mb) mb.onclick = function () { shown += 6; var y = window.pageYOffset; results(); window.scrollTo(0, y); };
       [].forEach.call(root.querySelectorAll('[data-drop]'), function (b) { b.onclick = function () { answers[+b.getAttribute('data-drop')] = null; shown = 6; note = ''; results(); focus(); }; });
       root.querySelector('[data-new]').onclick = function () { hall(); focus(); };
