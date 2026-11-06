@@ -218,6 +218,10 @@ p,li,figcaption,blockquote,.book-x,.tile span{text-wrap:pretty}
 main{max-width:1440px;padding:40px 40px 80px}
 .top{padding:12px 40px;background:color-mix(in srgb,var(--head) 82%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);box-shadow:none}
 .top nav a{font:500 14px var(--sans);letter-spacing:.01em;color:var(--muted);margin-left:22px;padding:6px 0}.top nav a:hover{color:var(--ink)}.top nav a.here{color:var(--ink)}
+.top nav{display:flex;align-items:center}.top nav a{position:relative;display:inline-flex;padding:8px 4px}.top nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav-l{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font:500 12px var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none;opacity:0;transition:opacity .12s}
+.top nav a:hover .nav-l,.top nav a:focus-visible .nav-l{opacity:1}.top nav a:last-child .nav-l{left:auto;right:0;transform:none}
+@media(max-width:600px){.top nav{justify-content:space-between}.top nav a{margin:0}}
 .lede{font:400 21px/1.55 var(--serif);max-width:760px}
 .story{max-width:860px}.story p,.post ul{font-size:19px;line-height:1.7}
 .story>.post-img,.story>.slider,.story>.post-art,.story>.hero{width:100%;max-width:none}
@@ -277,23 +281,6 @@ main{max-width:1440px;padding:40px 40px 80px}
 .faasc-tale .tale-choice::before{content:"¾7";position:absolute;left:0;color:#b4501e}.faasc-tale .tale-choice:hover,.faasc-tale .tale-choice:focus-visible{color:#8a3a14;text-decoration:underline}
 .faasc-tale .tale-end{text-align:center;font:italic 400 30px var(--display);color:#8a3a14;margin:26px 0 20px}
 .faasc-tale .tale-rule{font:16px/1.6 var(--serif);color:#e8dcc6;max-width:460px;margin:0 auto 22px}
-.you-are{max-width:640px;margin:40px auto;text-align:center}.you-are h1{font-size:44px;margin:6px 0 12px}.you-are .you-pic{width:100%;max-width:520px;border-radius:12px;margin:10px auto 22px;display:block}
-/* what the Studio sets into a page: pictures, pieces, palettes, rooms, frames and other stories; choices with pictures are doors */
-.faasc-tale .tb-block{margin:26px 0}.faasc-tale .tb-block figure{margin:0}.faasc-tale .tb-block figure img{width:100%;border-radius:6px;display:block}
-.faasc-tale .tb-block figcaption,.faasc-tale .tb-cap{font:italic 16px/1.5 var(--serif);color:#6f604a;margin:8px 0 12px;text-align:center}
-.faasc-tale .tb-pal{display:flex;flex-direction:column;align-items:center;gap:10px}.faasc-tale .tb-pal b{font:400 20px var(--display);color:#2a2320}
-.faasc-tale .tb-pal span{display:flex;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.15)}.faasc-tale .tb-pal i{width:56px;height:56px;display:block}
-.faasc-tale .tb-again{display:block;margin:14px auto 0;background:none;border:1px solid #c9b48e;border-radius:20px;padding:7px 16px;font:15px var(--serif);color:#6f4a2a;cursor:pointer}
-.faasc-tale .tb-story{display:flex;gap:16px;align-items:center;border:1px solid #e2d6bf;border-radius:8px;padding:12px;text-decoration:none;color:#2a2320;background:#fffaf0}
-.faasc-tale .tb-story img{width:120px;height:90px;object-fit:cover;border-radius:4px;flex:none}.faasc-tale .tb-story span{display:flex;flex-direction:column;gap:3px}
-.faasc-tale .tb-story small{color:#9a7a52;text-transform:uppercase;letter-spacing:.12em;font-size:11px}.faasc-tale .tb-story b{font:400 20px var(--display)}
-.faasc-tale .tb-story em{font:15px/1.5 var(--serif);color:#6f604a}.faasc-tale .tb-story u{color:#8a3a14;font-size:14px}
-.faasc-tale .tale-doors{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:20px}
-.faasc-tale .tale-doors .tale-choice{flex:1 1 200px;max-width:280px;padding:0;display:flex;flex-direction:column;gap:10px;text-align:center}
-.faasc-tale .tale-doors .tale-choice::before{content:none}
-.faasc-tale .tale-door{display:block;aspect-ratio:3/5;border-radius:120px 120px 6px 6px;overflow:hidden;background:#3a2a1e;box-shadow:inset 0 0 0 6px #6e4b2f,0 8px 18px rgba(0,0,0,.25);transition:transform .2s}
-.faasc-tale .tale-door img{width:100%;height:100%;object-fit:cover;display:block}.faasc-tale .tale-choice:hover .tale-door{transform:translateY(-4px)}
-@media(max-width:600px){.faasc-tale .tb-story{flex-direction:column;align-items:flex-start}.faasc-tale .tb-story img{width:100%;height:160px}.faasc-tale .tb-pal i{width:40px;height:40px}}
 .vol.tale::after{border-color:rgba(226,130,90,.9)}.vol b{max-height:calc(var(--h) - 72px);overflow:hidden}
 @media(max-width:900px){.visit-nav{margin:-28px -20px 28px}}
 /* the gallery: an entrance hung under the lights, rooms named once on a ruled label, the art doing the talking */
